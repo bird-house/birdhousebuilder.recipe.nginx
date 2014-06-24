@@ -19,8 +19,11 @@ class Nginx(object):
         self.buildout, self.name, self.options = buildout, name, options
         b_options = buildout['buildout']
         self.anaconda_home = b_options.get('anaconda-home', '/opt/anaconda')
+        self.options['prefix'] = self.anaconda_home
 
         self.ssl_subject = options.get('ssl_subject', "/C=DE/ST=Hamburg/L=Hamburg/O=Phoenix/CN=localhost")
+        self.input = options.get('input')
+        self.sites = options.get('sites', name)
 
     def install(self):
         installed = []
@@ -28,6 +31,7 @@ class Nginx(object):
         installed += list(self.install_config())
         installed += list(self.install_cert())
         installed += list(self.install_program())
+        installed += list(self.install_sites())
         return installed
 
     def install_nginx(self):
@@ -85,6 +89,25 @@ class Nginx(object):
              'command': '%s/bin/nginx -c %s/etc/nginx/nginx.conf -g "daemon off;"' % (self.anaconda_home, self.anaconda_home),
              })
         return script.install()
+
+    def install_sites(self):
+        templ_sites = Template(filename=self.input)
+        result = templ_sites.render(**self.options)
+
+        output = os.path.join(self.anaconda_home, 'etc', 'nginx', 'sites-enabled', self.sites)
+        try:
+            os.makedirs(os.path.dirname(output))
+        except OSError:
+            pass
+        
+        try:
+            os.remove(output)
+        except OSError:
+            pass
+
+        with open(output, 'wt') as fp:
+            fp.write(result)
+        return [output]
     
     def update(self):
         return self.install()
