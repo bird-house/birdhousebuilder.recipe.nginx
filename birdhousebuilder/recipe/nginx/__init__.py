@@ -12,6 +12,12 @@ import birdhousebuilder.recipe.supervisor
 templ_config = Template(filename=os.path.join(os.path.dirname(__file__), "nginx.conf"))
 templ_mkcert_script = Template(filename=os.path.join(os.path.dirname(__file__), "mkcert.sh"))
 
+def makedirs(dirname):
+    try:
+        os.makedirs(dirname)
+    except OSError:
+        pass
+
 class Nginx(object):
     """This recipe is used by zc.buildout"""
 
@@ -39,12 +45,10 @@ class Nginx(object):
             self.buildout,
             self.name,
             {'pkgs': 'nginx'})
-        
-        output = os.path.join(self.anaconda_home, 'var', 'cache', 'nginx')
-        try:
-            os.makedirs(output)
-        except OSError:
-            pass
+
+        makedirs( os.path.join(self.anaconda_home, 'etc', 'nginx') )
+        makedirs( os.path.join(self.anaconda_home, 'var', 'cache', 'nginx') )
+        makedirs( os.path.join(self.anaconda_home, 'var', 'log', 'nginx') )
         
         return script.install()
         
@@ -57,10 +61,7 @@ class Nginx(object):
             )
 
         output = os.path.join(self.anaconda_home, 'etc', 'nginx', 'nginx.conf')
-        try:
-            os.makedirs(os.path.dirname(output))
-        except OSError:
-            pass
+        makedirs(os.path.dirname(output))
         
         try:
             os.remove(output)
@@ -94,11 +95,8 @@ class Nginx(object):
         templ_sites = Template(filename=self.input)
         result = templ_sites.render(**self.options)
 
-        output = os.path.join(self.anaconda_home, 'etc', 'nginx', 'sites-enabled', self.sites)
-        try:
-            os.makedirs(os.path.dirname(output))
-        except OSError:
-            pass
+        output = os.path.join(self.anaconda_home, 'etc', 'nginx', 'conf.d', self.sites + '.conf')
+        makedirs(os.path.dirname(output))
         
         try:
             os.remove(output)
