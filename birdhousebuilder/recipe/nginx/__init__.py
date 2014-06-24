@@ -6,6 +6,7 @@
 import os
 from mako.template import Template
 
+import zc.buildout
 import birdhousebuilder.recipe.conda
 import birdhousebuilder.recipe.supervisor
 
@@ -28,6 +29,7 @@ class Nginx(object):
         self.options['prefix'] = self.anaconda_home
 
         self.ssl_subject = options.get('ssl_subject', "/C=DE/ST=Hamburg/L=Hamburg/O=Phoenix/CN=localhost")
+        self.ssl_overwrite = options.query_bool('ssl_overwrite', default='false')
         self.input = options.get('input')
         self.sites = options.get('sites', name)
 
@@ -74,12 +76,15 @@ class Nginx(object):
 
     def install_cert(self):
         from subprocess import check_call
-        
-        cmd = templ_mkcert_script.render(
-            prefix=self.anaconda_home,
-            ssl_subject=self.ssl_subject,
-            )
-        check_call(cmd, shell=True)
+
+        cert = os.path.join(self.anaconda_home, "etc", "nginx", "phoenix.cert")
+        if not os.path.exists(cert) or self.ssl_overwrite:
+            cmd = templ_mkcert_script.render(
+                cert=cert,
+                ssl_subject=self.ssl_subject,
+                )
+            check_call(cmd, shell=True)
+            return [cert]
         return []
 
     def install_program(self):
