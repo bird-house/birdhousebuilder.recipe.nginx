@@ -27,6 +27,7 @@ class Nginx(object):
         installed += list(self.install_nginx())
         installed += list(self.install_config())
         installed += list(self.install_cert())
+        installed += list(self.install_program())
         return installed
 
     def install_nginx(self):
@@ -34,6 +35,13 @@ class Nginx(object):
             self.buildout,
             self.name,
             {'pkgs': 'nginx'})
+        
+        output = os.path.join(self.anaconda_home, 'var', 'cache', 'nginx')
+        try:
+            os.makedirs(output)
+        except OSError:
+            pass
+        
         return script.install()
         
     def install_config(self):
@@ -68,6 +76,15 @@ class Nginx(object):
             )
         check_call(cmd, shell=True)
         return []
+
+    def install_program(self):
+        script = birdhousebuilder.recipe.supervisor.Supervisor(
+            self.buildout,
+            self.name,
+            {'program': 'nginx',
+             'command': '%s/bin/nginx -c %s/etc/nginx/nginx.conf -g "daemon off;"' % (self.anaconda_home, self.anaconda_home),
+             })
+        return script.install()
     
     def update(self):
         return self.install()
