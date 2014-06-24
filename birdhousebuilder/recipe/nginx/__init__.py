@@ -10,6 +10,7 @@ import birdhousebuilder.recipe.conda
 import birdhousebuilder.recipe.supervisor
 
 templ_config = Template(filename=os.path.join(os.path.dirname(__file__), "nginx.conf"))
+templ_mkcert_script = Template(filename=os.path.join(os.path.dirname(__file__), "mkcert.sh"))
 
 class Nginx(object):
     """This recipe is used by zc.buildout"""
@@ -19,12 +20,13 @@ class Nginx(object):
         b_options = buildout['buildout']
         self.anaconda_home = b_options.get('anaconda-home', '/opt/anaconda')
 
-        self.program = options.get('program', name)
+        self.ssl_subject = options.get('ssl_subject', "/C=DE/ST=Hamburg/L=Hamburg/O=Phoenix/CN=localhost")
 
     def install(self):
         installed = []
         installed += list(self.install_nginx())
         installed += list(self.install_config())
+        installed += list(self.install_cert())
         return installed
 
     def install_nginx(self):
@@ -56,7 +58,17 @@ class Nginx(object):
         with open(output, 'wt') as fp:
             fp.write(result)
         return [output]
+
+    def install_cert(self):
+        from subprocess import check_call
         
+        cmd = templ_mkcert_script.render(
+            prefix=self.anaconda_home,
+            ssl_subject=self.ssl_subject,
+            )
+        check_call(cmd, shell=True)
+        return []
+    
     def update(self):
         return self.install()
 
