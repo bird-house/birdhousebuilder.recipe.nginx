@@ -15,7 +15,7 @@ long_description = (
 
 entry_point = 'birdhousebuilder.recipe.nginx'
 entry_points = {"zc.buildout": [
-                            "default = %s:Nginx" % entry_point,
+                            "default = %s:Recipe" % entry_point,
                           ],
                 "zc.buildout.uninstall": [
                             "default = %s:uninstall" % entry_point,
@@ -48,9 +48,9 @@ setup(name='birdhousebuilder.recipe.nginx',
       install_requires=['setuptools',
                         'zc.buildout',
                         # -*- Extra requirements: -*-
-			'Mako',
-			'birdhousebuilder.recipe.conda',
-			'birdhousebuilder.recipe.supervisor',
+            'Mako',
+            'birdhousebuilder.recipe.conda',
+            'birdhousebuilder.recipe.supervisor',
                         ],
       tests_require=tests_require,
       extras_require=dict(tests=tests_require),

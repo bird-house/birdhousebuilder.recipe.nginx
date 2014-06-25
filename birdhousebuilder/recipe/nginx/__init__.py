@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # Copyright (C)2014 DKRZ GmbH
 
-"""Recipe conda"""
+"""Recipe nginx"""
 
 import os
 from mako.template import Template
@@ -12,13 +12,7 @@ from birdhousebuilder.recipe import conda, supervisor
 templ_config = Template(filename=os.path.join(os.path.dirname(__file__), "nginx.conf"))
 templ_mkcert_script = Template(filename=os.path.join(os.path.dirname(__file__), "mkcert.sh"))
 
-def makedirs(dirname):
-    try:
-        os.makedirs(dirname)
-    except OSError:
-        pass
-
-class Nginx(object):
+class Recipe(object):
     """This recipe is used by zc.buildout"""
 
     def __init__(self, buildout, name, options):
@@ -42,14 +36,14 @@ class Nginx(object):
         return installed
 
     def install_nginx(self):
-        script = conda.Conda(
+        script = conda.Recipe(
             self.buildout,
             self.name,
             {'pkgs': 'nginx'})
 
-        makedirs( os.path.join(self.anaconda_home, 'etc', 'nginx') )
-        makedirs( os.path.join(self.anaconda_home, 'var', 'cache', 'nginx') )
-        makedirs( os.path.join(self.anaconda_home, 'var', 'log', 'nginx') )
+        conda.makedirs( os.path.join(self.anaconda_home, 'etc', 'nginx') )
+        conda.makedirs( os.path.join(self.anaconda_home, 'var', 'cache', 'nginx') )
+        conda.makedirs( os.path.join(self.anaconda_home, 'var', 'log', 'nginx') )
         
         return script.install()
         
@@ -62,7 +56,7 @@ class Nginx(object):
             )
 
         output = os.path.join(self.anaconda_home, 'etc', 'nginx', 'nginx.conf')
-        makedirs(os.path.dirname(output))
+        conda.makedirs(os.path.dirname(output))
         
         try:
             os.remove(output)
@@ -87,7 +81,7 @@ class Nginx(object):
         return []
 
     def install_program(self):
-        script = supervisor.Supervisor(
+        script = supervisor.Recipe(
             self.buildout,
             self.name,
             {'program': 'nginx',
@@ -100,7 +94,7 @@ class Nginx(object):
         result = templ_sites.render(**self.options)
 
         output = os.path.join(self.anaconda_home, 'etc', 'nginx', 'conf.d', self.sites + '.conf')
-        makedirs(os.path.dirname(output))
+        conda.makedirs(os.path.dirname(output))
         
         try:
             os.remove(output)
