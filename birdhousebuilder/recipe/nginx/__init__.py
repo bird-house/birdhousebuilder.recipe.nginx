@@ -7,8 +7,7 @@ import os
 from mako.template import Template
 
 import zc.buildout
-import birdhousebuilder.recipe.conda
-import birdhousebuilder.recipe.supervisor
+from birdhousebuilder.recipe import conda, supervisor
 
 templ_config = Template(filename=os.path.join(os.path.dirname(__file__), "nginx.conf"))
 templ_mkcert_script = Template(filename=os.path.join(os.path.dirname(__file__), "mkcert.sh"))
@@ -25,7 +24,7 @@ class Nginx(object):
     def __init__(self, buildout, name, options):
         self.buildout, self.name, self.options = buildout, name, options
         b_options = buildout['buildout']
-        self.anaconda_home = b_options.get('anaconda-home', '/opt/anaconda')
+        self.anaconda_home = b_options.get('anaconda-home', conda.anaconda_home)
         self.options['prefix'] = self.anaconda_home
 
         self.ssl_subject = options.get('ssl_subject', "/C=DE/ST=Hamburg/L=Hamburg/O=Phoenix/CN=localhost")
@@ -43,7 +42,7 @@ class Nginx(object):
         return installed
 
     def install_nginx(self):
-        script = birdhousebuilder.recipe.conda.Conda(
+        script = conda.Conda(
             self.buildout,
             self.name,
             {'pkgs': 'nginx'})
@@ -88,7 +87,7 @@ class Nginx(object):
         return []
 
     def install_program(self):
-        script = birdhousebuilder.recipe.supervisor.Supervisor(
+        script = supervisor.Supervisor(
             self.buildout,
             self.name,
             {'program': 'nginx',
