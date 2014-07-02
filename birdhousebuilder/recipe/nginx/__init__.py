@@ -22,7 +22,7 @@ class Recipe(object):
         self.options['prefix'] = self.anaconda_home
 
         self.ssl_subject = options.get('ssl_subject', "/C=DE/ST=Hamburg/L=Hamburg/O=Phoenix/CN=localhost")
-        self.ssl_overwrite = options.query_bool('ssl_overwrite', default='false')
+        self.ssl_overwrite = conda.as_bool(options.get('ssl_overwrite', 'false'))
         self.input = options.get('input')
         self.sites = options.get('sites', name)
 
