@@ -18,7 +18,7 @@ class Recipe(object):
     def __init__(self, buildout, name, options):
         self.buildout, self.name, self.options = buildout, name, options
         b_options = buildout['buildout']
-        self.anaconda_home = b_options.get('anaconda-home', conda.anaconda_home)
+        self.anaconda_home = b_options.get('anaconda-home', conda.anaconda_home())
         self.options['prefix'] = self.anaconda_home
 
         self.ssl_subject = options.get('ssl_subject', "/C=DE/ST=Hamburg/L=Hamburg/O=Phoenix/CN=localhost")
