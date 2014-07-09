@@ -30,7 +30,7 @@ class Recipe(object):
         installed = []
         installed += list(self.install_nginx())
         installed += list(self.install_config())
-        installed += list(self.install_cert())
+        #installed += list(self.install_cert())
         installed += list(self.install_program())
         installed += list(self.install_sites())
         return installed
