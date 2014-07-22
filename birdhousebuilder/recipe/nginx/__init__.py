@@ -10,6 +10,7 @@ import zc.buildout
 from birdhousebuilder.recipe import conda, supervisor
 
 templ_config = Template(filename=os.path.join(os.path.dirname(__file__), "nginx.conf"))
+templ_proxy_config = Template(filename=os.path.join(os.path.dirname(__file__), "nginx_proxy.conf"))
 templ_mkcert_script = Template(filename=os.path.join(os.path.dirname(__file__), "mkcert.sh"))
 
 class Recipe(object):
@@ -31,7 +32,7 @@ class Recipe(object):
         installed += list(self.install_nginx())
         installed += list(self.install_config())
         #installed += list(self.install_cert())
-        installed += list(self.install_program())
+        installed += list(self.setup_service())
         installed += list(self.install_sites())
         return installed
 
@@ -67,6 +68,21 @@ class Recipe(object):
             fp.write(result)
         return [output]
 
+    def install_proxy_config(self):
+        result = templ_proxy_config.render(**self.options)
+
+        output = os.path.join(self.anaconda_home, 'etc', 'nginx', 'nginx_proxy.conf')
+        conda.makedirs(os.path.dirname(output))
+        
+        try:
+            os.remove(output)
+        except OSError:
+            pass
+
+        with open(output, 'wt') as fp:
+            fp.write(result)
+        return [output]
+
     def install_cert(self):
         from subprocess import check_call
 
@@ -80,7 +96,7 @@ class Recipe(object):
             return [cert]
         return []
 
-    def install_program(self):
+    def setup_service(self):
         script = supervisor.Recipe(
             self.buildout,
             self.name,
