@@ -12,7 +12,44 @@ from birdhousebuilder.recipe import conda, supervisor
 templ_config = Template(filename=os.path.join(os.path.dirname(__file__), "nginx.conf"))
 templ_proxy_config = Template(filename=os.path.join(os.path.dirname(__file__), "nginx_proxy.conf"))
 templ_start_stop = Template(filename=os.path.join(os.path.dirname(__file__), "nginx"))
-templ_mkcert_script = Template(filename=os.path.join(os.path.dirname(__file__), "mkcert.sh"))
+
+def create_self_signed_cert(cert_dir, app_name='myapp', subject={}):
+    """
+    If datacard.crt and datacard.key don't exist in cert_dir, create a new
+    self-signed cert and keypair and write them into that directory.
+    """
+
+    from OpenSSL import crypto, SSL
+    import os
+
+    cert_file = os.path.join(cert_dir, app_name + ".cert")
+    key_file = os.path.join(cert_dir, app_name + ".key")
+
+    if not os.path.exists(cert_file) or not os.path.exists(key_file):
+            
+        # create a key pair
+        k = crypto.PKey()
+        k.generate_key(crypto.TYPE_RSA, 1024)
+
+        # create a self-signed cert
+        cert = crypto.X509()
+        cert.get_subject().C = subject.get('C', "DE")
+        cert.get_subject().O = subject.get('O', "my company")
+        cert.get_subject().OU = subject.get('OU', "my organization")
+        cert.get_subject().CN = subject.get('CN', "localhost")
+        cert.set_serial_number(1000)
+        cert.gmtime_adj_notBefore(0)
+        cert.gmtime_adj_notAfter(10*365*24*60*60)
+        cert.set_issuer(cert.get_subject())
+        cert.set_pubkey(k)
+        cert.sign(k, 'sha256')
+
+        open(cert_file, "wt").write(
+            crypto.dump_certificate(crypto.FILETYPE_PEM, cert))
+        open(key_file, "wt").write(
+            crypto.dump_privatekey(crypto.FILETYPE_PEM, k))
+
+    return [cert_file, key_file]
 
 class Recipe(object):
     """This recipe is used by zc.buildout"""
@@ -30,7 +67,6 @@ class Recipe(object):
         self.options['proxy_enabled'] = self.options.get('proxy_enabled', 'false')
         self.proxy_enabled = conda.as_bool(self.options['proxy_enabled'])
 
-        self.ssl_subject = options.get('ssl_subject', "/C=DE/ST=Hamburg/L=Hamburg/O=Phoenix/CN=localhost")
         self.ssl_overwrite = conda.as_bool(options.get('ssl_overwrite', 'false'))
         self.input = options.get('input')
         self.sites = options.get('sites', name)
@@ -42,7 +78,7 @@ class Recipe(object):
         if self.proxy_enabled:
             installed += list(self.install_proxy_config())
             installed += list(self.install_start_stop())
-        #installed += list(self.install_cert())
+            installed += list(self.install_cert())
         installed += list(self.setup_service())
         installed += list(self.install_sites())
         return installed
@@ -95,17 +131,13 @@ class Recipe(object):
         return [output]
 
     def install_cert(self):
-        from subprocess import check_call
-
-        cert = os.path.join(self.anaconda_home, "etc", "nginx", "phoenix.cert")
-        if not os.path.exists(cert) or self.ssl_overwrite:
-            cmd = templ_mkcert_script.render(
-                cert=cert,
-                ssl_subject=self.ssl_subject,
-                )
-            check_call(cmd, shell=True)
-            return [cert]
-        return []
+        cert_dir = os.path.join(self.anaconda_home, "etc", "nginx")
+        subject = dict(
+            C=self.options.get('country', 'DE'),
+            O=self.options.get('company', 'my company'),
+            OU=self.options.get('organisation', 'my organisation'),
+            CN=self.options.get('hostname'))
+        return create_self_signed_cert(cert_dir=cert_dir, app_name=self.sites, subject=subject)
 
     def setup_service(self):
         script = supervisor.Recipe(
