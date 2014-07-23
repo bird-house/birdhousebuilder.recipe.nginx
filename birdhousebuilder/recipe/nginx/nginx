@@ -1,0 +1,63 @@
+#!/bin/sh
+#
+# this script starts and stops the nginx daemon
+
+set -e
+CONF_FILE="${prefix}/etc/nginx/nginx_proxy.conf"
+PATH=${prefix}/bin:/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+DESC="nginx proxy daemon"
+DAEMON=${prefix}/bin/nginx
+NAME=$(basename $DAEMON)
+SCRIPTNAME=/etc/init.d/$NAME
+
+test -x $DAEMON || exit 0
+
+d_start() {
+    $DAEMON -c $CONF_FILE || echo -n " already running"
+}
+
+d_stop() {
+    $DAEMON -c $CONF_FILE -s quit || echo -n " not running"
+}
+
+d_reload() {
+    $DAEMON -c $CONF_FILE -s reload || echo -n " could not reload"
+}
+
+configtest() {
+    $DAEMON -t -c $CONF_FILE
+}
+
+case "$1" in
+    start)
+        echo -n "Starting $DESC: $NAME"
+        d_start
+        echo "."
+        ;;
+    stop)
+        echo -n "Stopping $DESC: $NAME"
+        d_stop
+        echo "."
+        ;;
+    reload)
+        echo -n "Reloading $DESC configuration..."
+        configtest || return $?
+        d_reload
+        echo "reloaded.";;
+    restart)
+        echo -n "Restarting $DESC: $NAME"
+        configtest || return $?
+        d_stop
+        sleep 2
+        d_start
+        echo "."
+        ;;
+    *)
+        echo "Usage: $SCRIPTNAME {start|stop|restart|reload}" >&2
+        exit 3
+        ;;
+esac
+exit 0
+
+
+

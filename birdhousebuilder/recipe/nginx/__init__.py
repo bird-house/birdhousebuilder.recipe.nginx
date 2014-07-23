@@ -11,6 +11,7 @@ from birdhousebuilder.recipe import conda, supervisor
 
 templ_config = Template(filename=os.path.join(os.path.dirname(__file__), "nginx.conf"))
 templ_proxy_config = Template(filename=os.path.join(os.path.dirname(__file__), "nginx_proxy.conf"))
+templ_start_stop = Template(filename=os.path.join(os.path.dirname(__file__), "nginx"))
 templ_mkcert_script = Template(filename=os.path.join(os.path.dirname(__file__), "mkcert.sh"))
 
 class Recipe(object):
@@ -40,6 +41,7 @@ class Recipe(object):
         installed += list(self.install_config())
         if self.proxy_enabled:
             installed += list(self.install_proxy_config())
+            installed += list(self.install_start_stop())
         #installed += list(self.install_cert())
         installed += list(self.setup_service())
         installed += list(self.install_sites())
@@ -128,6 +130,22 @@ class Recipe(object):
 
         with open(output, 'wt') as fp:
             fp.write(result)
+        return [output]
+
+    def install_start_stop(self):
+        result = templ_start_stop.render(
+            prefix=self.anaconda_home)
+        output = os.path.join(self.anaconda_home, 'etc', 'init.d', 'nginx')
+        conda.makedirs(os.path.dirname(output))
+        
+        try:
+            os.remove(output)
+        except OSError:
+            pass
+
+        with open(output, 'wt') as fp:
+            fp.write(result)
+            os.chmod(output, 0o755)
         return [output]
     
     def update(self):
