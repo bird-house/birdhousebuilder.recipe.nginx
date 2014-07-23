@@ -5,7 +5,7 @@ This module contains the tool of birdhousebuilder.recipe.nginx
 from setuptools import find_packages
 from setuptools import setup
 
-version = '0.1'
+version = '0.1.0'
 description = 'A Buildout recipe to install and configure nginx'
 long_description = (
     open('README.rst').read() + '\n' +
@@ -48,9 +48,10 @@ setup(name='birdhousebuilder.recipe.nginx',
       install_requires=['setuptools',
                         'zc.buildout',
                         # -*- Extra requirements: -*-
-            'Mako',
-            'birdhousebuilder.recipe.conda',
-            'birdhousebuilder.recipe.supervisor',
+                        'mako',
+                        'pyopenssl',
+                        'birdhousebuilder.recipe.conda',
+                        'birdhousebuilder.recipe.supervisor',
                         ],
       tests_require=tests_require,
       extras_require=dict(tests=tests_require),
