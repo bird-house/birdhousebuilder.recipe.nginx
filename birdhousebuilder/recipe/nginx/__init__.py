@@ -84,6 +84,7 @@ class Recipe(object):
         self.anaconda_home = b_options.get('anaconda-home', conda.anaconda_home())
         self.options['prefix'] = self.anaconda_home
         self.options['user'] = self.options.get('user', 'www-data')
+        self.options['group'] = self.options.get('group', 'www-data')
         self.options['hostname'] = self.options.get('hostname', 'localhost')
         self.options['http_port'] = self.options.get('http_port', '8081')
         self.options['wps_url'] = self.options.get('wps_url', 'http://localhost:8091/wps')
@@ -123,9 +124,7 @@ class Recipe(object):
         """
         install nginx main config file
         """
-        result = templ_config.render(
-            prefix=self.anaconda_home,
-            )
+        result = templ_config.render(**self.options)
 
         output = os.path.join(self.anaconda_home, 'etc', 'nginx', 'nginx.conf')
         conda.makedirs(os.path.dirname(output))

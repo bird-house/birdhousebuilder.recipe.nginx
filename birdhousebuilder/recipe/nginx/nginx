@@ -3,9 +3,9 @@
 # this script starts and stops the nginx daemon
 
 set -e
-CONF_FILE="${prefix}/etc/nginx/nginx_proxy.conf"
+CONF_FILE="${prefix}/etc/nginx/nginx.conf"
 PATH=${prefix}/bin:/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-DESC="nginx proxy daemon"
+DESC="nginx daemon"
 DAEMON=${prefix}/bin/nginx
 NAME=$(basename $DAEMON)
 SCRIPTNAME=/etc/init.d/$NAME
