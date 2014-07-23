@@ -10,7 +10,7 @@ import zc.buildout
 from birdhousebuilder.recipe import conda, supervisor
 
 templ_config = Template(filename=os.path.join(os.path.dirname(__file__), "nginx.conf"))
-templ_proxy_config = Template(filename=os.path.join(os.path.dirname(__file__), "nginx_proxy.conf"))
+templ_proxy_config = Template(filename=os.path.join(os.path.dirname(__file__), "proxy.conf"))
 templ_start_stop = Template(filename=os.path.join(os.path.dirname(__file__), "nginx"))
 
 def _new_serial(ca_name, CN):
@@ -103,7 +103,7 @@ class Recipe(object):
             installed += list(self.install_proxy_config())
             installed += list(self.install_start_stop())
             installed += list(self.install_cert())
-        installed += list(self.setup_service())
+        #installed += list(self.setup_service())
         installed += list(self.install_sites())
         return installed
 
@@ -142,7 +142,7 @@ class Recipe(object):
     def install_proxy_config(self):
         result = templ_proxy_config.render(**self.options)
 
-        output = os.path.join(self.anaconda_home, 'etc', 'nginx', 'nginx_proxy.conf')
+        output = os.path.join(self.anaconda_home, 'etc', 'nginx', 'conf.d', 'proxy.conf')
         conda.makedirs(os.path.dirname(output))
         
         try:
