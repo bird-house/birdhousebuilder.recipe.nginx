@@ -21,6 +21,9 @@ class Recipe(object):
         b_options = buildout['buildout']
         self.anaconda_home = b_options.get('anaconda-home', conda.anaconda_home())
         self.options['prefix'] = self.anaconda_home
+        self.options['user'] = self.options.get('user', 'www-data')
+        self.options['hostname'] = self.options.get('hostname', 'localhost')
+        self.proxy_enabled = conda.as_bool(options.get('proxy_enabled', 'false'))
 
         self.ssl_subject = options.get('ssl_subject', "/C=DE/ST=Hamburg/L=Hamburg/O=Phoenix/CN=localhost")
         self.ssl_overwrite = conda.as_bool(options.get('ssl_overwrite', 'false'))
@@ -31,7 +34,8 @@ class Recipe(object):
         installed = []
         installed += list(self.install_nginx())
         installed += list(self.install_config())
-        installed += list(self.install_proxy_config())
+        if self.proxy_enabled:
+            installed += list(self.install_proxy_config())
         #installed += list(self.install_cert())
         installed += list(self.setup_service())
         installed += list(self.install_sites())
