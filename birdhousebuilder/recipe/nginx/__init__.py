@@ -13,6 +13,30 @@ templ_config = Template(filename=os.path.join(os.path.dirname(__file__), "nginx.
 templ_proxy_config = Template(filename=os.path.join(os.path.dirname(__file__), "nginx_proxy.conf"))
 templ_start_stop = Template(filename=os.path.join(os.path.dirname(__file__), "nginx"))
 
+def _new_serial(ca_name, CN):
+    '''
+    Return a serial number in hex using md5sum, based upon the ca_name and
+    CN values
+  
+    ca_name
+        name of the CA
+    CN
+        common name in the request
+    '''
+    import hashlib
+    import time
+    
+    hashnum = int(
+            hashlib.md5(
+                '{0}_{1}_{2}'.format(
+                    ca_name,
+                    CN,
+                    int(time.time()))
+                ).hexdigest(),
+            16
+            )
+    return hashnum
+
 def create_self_signed_cert(cert_dir, app_name='myapp', subject={}):
     """
     If datacard.crt and datacard.key don't exist in cert_dir, create a new
@@ -37,7 +61,7 @@ def create_self_signed_cert(cert_dir, app_name='myapp', subject={}):
         cert.get_subject().O = subject.get('O', "my company")
         cert.get_subject().OU = subject.get('OU', "my organization")
         cert.get_subject().CN = subject.get('CN', "localhost")
-        cert.set_serial_number(1000)
+        cert.set_serial_number(_new_serial(app_name, subject.get('CN', 'localhost')))
         cert.gmtime_adj_notBefore(0)
         cert.gmtime_adj_notAfter(10*365*24*60*60)
         cert.set_issuer(cert.get_subject())
@@ -67,9 +91,9 @@ class Recipe(object):
         self.options['proxy_enabled'] = self.options.get('proxy_enabled', 'false')
         self.proxy_enabled = conda.as_bool(self.options['proxy_enabled'])
 
-        self.ssl_overwrite = conda.as_bool(options.get('ssl_overwrite', 'false'))
         self.input = options.get('input')
-        self.sites = options.get('sites', name)
+        self.options['sites'] = self.options.get('sites', name)
+        self.sites = self.options['sites']
 
     def install(self):
         installed = []
@@ -137,7 +161,8 @@ class Recipe(object):
             O=self.options.get('company', 'my company'),
             OU=self.options.get('organisation', 'my organisation'),
             CN=self.options.get('hostname'))
-        return create_self_signed_cert(cert_dir=cert_dir, app_name=self.sites, subject=subject)
+        create_self_signed_cert(cert_dir=cert_dir, app_name=self.sites, subject=subject)
+        return []
 
     def setup_service(self):
         script = supervisor.Recipe(
