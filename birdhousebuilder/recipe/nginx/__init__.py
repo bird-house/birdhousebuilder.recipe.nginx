@@ -26,7 +26,8 @@ class Recipe(object):
         self.options['http_port'] = self.options.get('http_port', '8081')
         self.options['wps_url'] = self.options.get('wps_url', 'http://localhost:8091/wps')
         self.options['thredds_url'] = self.options.get('thredds_url', 'http://localhost:8080/thredds')
-        self.proxy_enabled = conda.as_bool(options.get('proxy_enabled', 'false'))
+        self.options['proxy_enabled'] = self.options.get('proxy_enabled', 'false')
+        self.proxy_enabled = conda.as_bool(self.options['proxy_enabled'])
 
         self.ssl_subject = options.get('ssl_subject', "/C=DE/ST=Hamburg/L=Hamburg/O=Phoenix/CN=localhost")
         self.ssl_overwrite = conda.as_bool(options.get('ssl_overwrite', 'false'))
