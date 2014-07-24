@@ -7,7 +7,7 @@ import os
 from mako.template import Template
 
 import zc.buildout
-from birdhousebuilder.recipe import conda, supervisor
+from birdhousebuilder.recipe import conda
 
 templ_config = Template(filename=os.path.join(os.path.dirname(__file__), "nginx.conf"))
 templ_proxy_config = Template(filename=os.path.join(os.path.dirname(__file__), "proxy.conf"))
@@ -163,14 +163,14 @@ class Recipe(object):
         create_self_signed_cert(cert_dir=cert_dir, app_name=self.sites, subject=subject)
         return []
 
-    def setup_service(self):
-        script = supervisor.Recipe(
-            self.buildout,
-            self.name,
-            {'program': 'nginx',
-             'command': '%s/bin/nginx -c %s/etc/nginx/nginx.conf -g "daemon off;"' % (self.anaconda_home, self.anaconda_home),
-             })
-        return script.install()
+    ## def setup_service(self):
+    ##     script = supervisor.Recipe(
+    ##         self.buildout,
+    ##         self.name,
+    ##         {'program': 'nginx',
+    ##          'command': '%s/bin/nginx -c %s/etc/nginx/nginx.conf -g "daemon off;"' % (self.anaconda_home, self.anaconda_home),
+    ##          })
+    ##     return script.install()
 
     def install_sites(self):
         templ_sites = Template(filename=self.input)
