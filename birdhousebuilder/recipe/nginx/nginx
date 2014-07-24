@@ -20,6 +20,7 @@ SCRIPTNAME=/etc/init.d/$NAME
 test -x $DAEMON || exit 0
 
 start() {
+    configtest || exit 1
     echo -n "Starting $NAME ... "
     $DAEMON -c $CONF_FILE >/dev/null 2>&1  && echo "Done." || echo "is already running."
 }
@@ -30,11 +31,13 @@ stop() {
 }
 
 reload() {
+    configtest || exit 1
     echo -n "Reloading $NAME configuration ... "
     $DAEMON -c $CONF_FILE -s reload >/dev/null 2>&1 && echo "Done."|| echo "could not reload."
 }
 
 status() {
+    configtest || exit 1
     echo -n "Status $NAME ... "
     pidof $NAME >/dev/null 2>&1 && echo "is running" || echo "is not running."
 }
