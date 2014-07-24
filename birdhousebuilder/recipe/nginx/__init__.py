@@ -102,9 +102,9 @@ class Recipe(object):
         installed += list(self.install_config())
         if self.proxy_enabled:
             installed += list(self.install_proxy_config())
-            installed += list(self.install_start_stop())
             installed += list(self.install_cert())
         #installed += list(self.setup_service())
+        installed += list(self.install_start_stop())
         installed += list(self.install_sites())
         return installed
 
