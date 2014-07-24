@@ -1,27 +1,42 @@
-#!/bin/sh
+#!/bin/bash
 #
-# this script starts and stops the nginx daemon
+# ${prefix}/etc/init.d/nginx
+# Handles starting and stopping nginx web server.
+#
+# Provides:          nginx
+# Required-Start:    $local_fs $remote_fs $network
+# Required-Stop:     $local_fs $remote_fs $network
+# Default-Start:     3 5
+# Default-Stop:      0 1 2 6
+# Description:       Provides nginx service
 
 set -e
 CONF_FILE="${prefix}/etc/nginx/nginx.conf"
 PATH=${prefix}/bin:/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-DESC="nginx daemon"
 DAEMON=${prefix}/bin/nginx
 NAME=$(basename $DAEMON)
 SCRIPTNAME=/etc/init.d/$NAME
 
 test -x $DAEMON || exit 0
 
-d_start() {
-    $DAEMON -c $CONF_FILE || echo -n " already running"
+start() {
+    echo -n "Starting $NAME ... "
+    $DAEMON -c $CONF_FILE >/dev/null 2>&1  && echo "Done." || echo "is already running."
 }
 
-d_stop() {
-    $DAEMON -c $CONF_FILE -s quit || echo -n " not running"
+stop() {
+    echo -n "Stopping $NAME ... "
+    $DAEMON -c $CONF_FILE -s quit >/dev/null 2>&1 && echo "Done." || echo "is not running."
 }
 
-d_reload() {
-    $DAEMON -c $CONF_FILE -s reload || echo -n " could not reload"
+reload() {
+    echo -n "Reloading $NAME configuration ... "
+    $DAEMON -c $CONF_FILE -s reload >/dev/null 2>&1 && echo "Done."|| echo "could not reload."
+}
+
+status() {
+    echo -n "Status $NAME ... "
+    pidof $NAME >/dev/null 2>&1 && echo "is running" || echo "is not running."
 }
 
 configtest() {
@@ -30,31 +45,30 @@ configtest() {
 
 case "$1" in
     start)
-        echo -n "Starting $DESC: $NAME"
-        d_start
-        echo "."
+        start
         ;;
     stop)
-        echo -n "Stopping $DESC: $NAME"
-        d_stop
-        echo "."
+        stop
         ;;
     reload)
-        echo -n "Reloading $DESC configuration..."
-        configtest || return $?
-        d_reload
-        echo "reloaded.";;
+        reload
+        ;;
     restart)
-        echo -n "Restarting $DESC: $NAME"
-        configtest || return $?
-        d_stop
+        echo "Restarting $NAME ..."
+        stop
         sleep 2
-        d_start
-        echo "."
+        start
+        echo "Restarting $NAME ... Done."
+        ;;
+    status)
+        status
+        ;;
+    test)
+        configtest
         ;;
     *)
-        echo "Usage: $SCRIPTNAME {start|stop|restart|reload}" >&2
-        exit 3
+        echo "Usage: $SCRIPTNAME {start|stop|restart|reload|status|test}" >&2
+        exit 1
         ;;
 esac
 exit 0
