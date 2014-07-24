@@ -81,8 +81,8 @@ class Recipe(object):
     def __init__(self, buildout, name, options):
         self.buildout, self.name, self.options = buildout, name, options
         b_options = buildout['buildout']
-        self.anaconda_home = b_options.get('anaconda-home', conda.anaconda_home())
-        self.options['prefix'] = self.anaconda_home
+        self.prefix = b_options.get('anaconda-home', conda.anaconda_home())
+        self.options['prefix'] = self.prefix
         self.options['user'] = self.options.get('user', 'www-data')
         self.options['group'] = self.options.get('group', 'www-data')
         self.options['hostname'] = self.options.get('hostname', 'localhost')
@@ -114,9 +114,9 @@ class Recipe(object):
             self.name,
             {'pkgs': 'nginx'})
 
-        conda.makedirs( os.path.join(self.anaconda_home, 'etc', 'nginx') )
-        conda.makedirs( os.path.join(self.anaconda_home, 'var', 'cache', 'nginx') )
-        conda.makedirs( os.path.join(self.anaconda_home, 'var', 'log', 'nginx') )
+        conda.makedirs( os.path.join(self.prefix, 'etc', 'nginx') )
+        conda.makedirs( os.path.join(self.prefix, 'var', 'cache', 'nginx') )
+        conda.makedirs( os.path.join(self.prefix, 'var', 'log', 'nginx') )
         
         return script.install()
         
@@ -126,7 +126,7 @@ class Recipe(object):
         """
         result = templ_config.render(**self.options)
 
-        output = os.path.join(self.anaconda_home, 'etc', 'nginx', 'nginx.conf')
+        output = os.path.join(self.prefix, 'etc', 'nginx', 'nginx.conf')
         conda.makedirs(os.path.dirname(output))
         
         try:
@@ -141,7 +141,7 @@ class Recipe(object):
     def install_proxy_config(self):
         result = templ_proxy_config.render(**self.options)
 
-        output = os.path.join(self.anaconda_home, 'etc', 'nginx', 'conf.d', 'proxy.conf')
+        output = os.path.join(self.prefix, 'etc', 'nginx', 'conf.d', 'proxy.conf')
         conda.makedirs(os.path.dirname(output))
         
         try:
@@ -154,7 +154,7 @@ class Recipe(object):
         return [output]
 
     def install_cert(self):
-        cert_dir = os.path.join(self.anaconda_home, "etc", "nginx")
+        cert_dir = os.path.join(self.prefix, "etc", "nginx")
         subject = dict(
             C=self.options.get('country', 'DE'),
             O=self.options.get('company', 'my company'),
@@ -168,7 +168,7 @@ class Recipe(object):
     ##         self.buildout,
     ##         self.name,
     ##         {'program': 'nginx',
-    ##          'command': '%s/bin/nginx -c %s/etc/nginx/nginx.conf -g "daemon off;"' % (self.anaconda_home, self.anaconda_home),
+    ##          'command': '%s/bin/nginx -c %s/etc/nginx/nginx.conf -g "daemon off;"' % (self.prefix, self.prefix),
     ##          })
     ##     return script.install()
 
@@ -176,7 +176,7 @@ class Recipe(object):
         templ_sites = Template(filename=self.input)
         result = templ_sites.render(**self.options)
 
-        output = os.path.join(self.anaconda_home, 'etc', 'nginx', 'conf.d', self.sites + '.conf')
+        output = os.path.join(self.prefix, 'etc', 'nginx', 'conf.d', self.sites + '.conf')
         conda.makedirs(os.path.dirname(output))
         
         try:
@@ -190,8 +190,8 @@ class Recipe(object):
 
     def install_start_stop(self):
         result = templ_start_stop.render(
-            prefix=self.anaconda_home)
-        output = os.path.join(self.anaconda_home, 'etc', 'init.d', 'nginx')
+            prefix=self.prefix)
+        output = os.path.join(self.prefix, 'etc', 'init.d', 'nginx')
         conda.makedirs(os.path.dirname(output))
         
         try:
