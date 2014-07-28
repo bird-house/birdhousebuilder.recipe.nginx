@@ -49,7 +49,7 @@ setup(name='birdhousebuilder.recipe.nginx',
                         'zc.buildout',
                         # -*- Extra requirements: -*-
                         'mako',
-                        'pyopenssl',
+                        'pyopenssl==0.13.1',
                         'birdhousebuilder.recipe.conda',
                         ],
       tests_require=tests_require,
