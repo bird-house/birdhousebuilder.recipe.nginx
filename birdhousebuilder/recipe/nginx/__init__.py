@@ -112,7 +112,7 @@ class Recipe(object):
         script = conda.Recipe(
             self.buildout,
             self.name,
-            {'pkgs': 'nginx pyopenssl'})
+            {'pkgs': 'nginx'})
 
         conda.makedirs( os.path.join(self.prefix, 'etc', 'nginx') )
         conda.makedirs( os.path.join(self.prefix, 'var', 'cache', 'nginx') )
