@@ -5,6 +5,7 @@ Changes
 ==================
 
 * Fixed proxy config for wpsoutputs.
+* Using proxy-enabled buildout option.
 
 0.1.2 (2014-08-01)
 ==================

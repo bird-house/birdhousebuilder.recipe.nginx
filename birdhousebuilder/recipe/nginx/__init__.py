@@ -89,8 +89,8 @@ class Recipe(object):
         self.options['http_port'] = self.options.get('http_port', '8081')
         self.options['wps_url'] = self.options.get('wps_url', 'http://localhost:8091/wps')
         self.options['thredds_url'] = self.options.get('thredds_url', 'http://localhost:8080/thredds')
-        self.options['proxy_enabled'] = self.options.get('proxy_enabled', 'false')
-        self.proxy_enabled = conda.as_bool(self.options['proxy_enabled'])
+        self.options['proxy-enabled'] = self.options.get('proxy-enabled', 'false')
+        self.proxy_enabled = conda.as_bool(self.options['proxy-enabled'])
 
         self.input = options.get('input')
         self.options['sites'] = self.options.get('sites', name)
