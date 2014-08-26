@@ -6,6 +6,7 @@ Changes
 
 * Fixed proxy config for wpsoutputs.
 * Using proxy-enabled buildout option.
+* options master and superuser_enabled added.
 
 0.1.2 (2014-08-01)
 ==================
