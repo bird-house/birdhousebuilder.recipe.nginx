@@ -90,7 +90,7 @@ class Recipe(object):
         self.options['thredds_url'] = self.options.get('thredds_url', 'http://localhost:8080/thredds')
         self.options['proxy_enabled'] = self.options.get('proxy-enabled', 'false')
         self.options['superuser_enabled'] = self.options.get('superuser-enabled', 'false')
-        self.master =  conda.as_bool(self.options.get('master', 'true'))
+        self.master =  conda.as_bool(self.options.get('master', 'false'))
         self.proxy_enabled = conda.as_bool(self.options['proxy_enabled'])
 
         self.input = options.get('input')
