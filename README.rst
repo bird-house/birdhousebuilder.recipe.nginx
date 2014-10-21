@@ -9,12 +9,13 @@ Introduction
 
 ``birdhousebuilder.recipe.nginx`` is a `Buildout`_ recipe to install `Nginx`_ from an `Anaconda`_ channel and to deploy a site configuration for your application.
 
-Birdhousebuilder recipes are used to build Web Processing Service components (Phoenix, Malleefowl, Nighthawk, FlyingPigeon, ...) of the ClimDaPs project. All Birdhousebuilder recipes need an existing `Anaconda`_ installation.  
+Birdhousebuilder recipes are used to build Web Processing Service components (Phoenix, Malleefowl, Nighthawk, FlyingPigeon, ...) of the `Birdhouse`_ project. All Birdhousebuilder recipes need an existing `Anaconda`_ installation.  
 
 .. _`Buildout`: http://buildout.org/
 .. _`Anaconda`: http://continuum.io/
 .. _`Nginx`: http://nginx.org/
 .. _`Mako`: http://www.makotemplates.org
+.. _`Birdhouse`: http://bird-house.github.io
 
 Usage
 *****
