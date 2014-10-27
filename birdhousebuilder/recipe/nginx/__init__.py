@@ -52,7 +52,7 @@ def create_self_signed_cert(cert_dir, app_name='myapp', subject={}):
             
         # create a key pair
         k = crypto.PKey()
-        k.generate_key(crypto.TYPE_RSA, 1024)
+        k.generate_key(crypto.TYPE_RSA, 2048)
 
         # create a self-signed cert
         cert = crypto.X509()
