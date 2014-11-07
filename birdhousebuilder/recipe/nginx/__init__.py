@@ -6,7 +6,7 @@ import os
 from mako.template import Template
 
 import zc.buildout
-from birdhousebuilder.recipe import conda
+from birdhousebuilder.recipe import conda, supervisor
 
 templ_config = Template(filename=os.path.join(os.path.dirname(__file__), "nginx.conf"))
 templ_proxy_config = Template(filename=os.path.join(os.path.dirname(__file__), "proxy.conf"))
@@ -105,8 +105,8 @@ class Recipe(object):
         if self.master and self.proxy_enabled:
             installed += list(self.install_proxy_config())
             installed += list(self.install_cert())
-        #installed += list(self.setup_service())
-        installed += list(self.install_start_stop())
+        installed += list(self.setup_service())
+        #installed += list(self.install_start_stop())
         installed += list(self.install_sites())
         return installed
 
@@ -165,14 +165,14 @@ class Recipe(object):
         create_self_signed_cert(cert_dir=cert_dir, app_name=self.sites, subject=subject)
         return []
 
-    ## def setup_service(self):
-    ##     script = supervisor.Recipe(
-    ##         self.buildout,
-    ##         self.name,
-    ##         {'program': 'nginx',
-    ##          'command': '%s/bin/nginx -c %s/etc/nginx/nginx.conf -g "daemon off;"' % (self.prefix, self.prefix),
-    ##          })
-    ##     return script.install()
+    def setup_service(self):
+        script = supervisor.Recipe(
+            self.buildout,
+            self.name,
+            {'program': 'nginx',
+             'command': '%s/bin/nginx -c %s/etc/nginx/nginx.conf -g "daemon off;"' % (self.prefix, self.prefix),
+             })
+        return script.install()
 
     def install_sites(self):
         templ_sites = Template(filename=self.input)
@@ -190,23 +190,33 @@ class Recipe(object):
             fp.write(result)
         return [output]
 
-    def install_start_stop(self):
-        result = templ_start_stop.render(
-            prefix=self.prefix)
+    ## def install_start_stop(self):
+    ##     result = templ_start_stop.render(
+    ##         prefix=self.prefix)
+    ##     output = os.path.join(self.prefix, 'etc', 'init.d', 'nginx')
+    ##     conda.makedirs(os.path.dirname(output))
+        
+    ##     try:
+    ##         os.remove(output)
+    ##     except OSError:
+    ##         pass
+
+    ##     with open(output, 'wt') as fp:
+    ##         fp.write(result)
+    ##         os.chmod(output, 0o755)
+    ##     return [output]
+
+    def remove_start_stop(self):
         output = os.path.join(self.prefix, 'etc', 'init.d', 'nginx')
-        conda.makedirs(os.path.dirname(output))
         
         try:
             os.remove(output)
         except OSError:
             pass
-
-        with open(output, 'wt') as fp:
-            fp.write(result)
-            os.chmod(output, 0o755)
         return [output]
     
     def update(self):
+        self.remove_start_stop()
         return self.install()
 
 def uninstall(name, options):
