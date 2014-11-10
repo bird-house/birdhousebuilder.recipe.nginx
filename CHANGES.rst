@@ -1,6 +1,11 @@
 Changes
 *******
 
+0.1.6 (current)
+==================
+
+* Fixed supervisor config: nginx didn't stop.
+
 0.1.5 (2014-10-27)
 ==================
 

@@ -173,7 +173,8 @@ class Recipe(object):
             self.buildout,
             self.name,
             {'program': 'nginx',
-             'command': '%s/bin/nginx -c %s/etc/nginx/nginx.conf -g "daemon off;"' % (self.prefix, self.prefix),
+             'command': '%s/sbin/nginx -p %s -c %s/etc/nginx/nginx.conf -g "daemon off;"' % (self.prefix, self.prefix, self.prefix),
+             'directory': '%s/sbin' % (self.prefix),
              })
         return script.install()
 
