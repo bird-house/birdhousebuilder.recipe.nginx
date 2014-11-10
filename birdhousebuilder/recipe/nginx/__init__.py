@@ -108,6 +108,9 @@ class Recipe(object):
         installed += list(self.setup_service())
         #installed += list(self.install_start_stop())
         installed += list(self.install_sites())
+
+        self.upgrade()
+        
         return installed
 
     def install_nginx(self):
@@ -216,8 +219,12 @@ class Recipe(object):
         return [output]
     
     def update(self):
-        self.remove_start_stop()
         return self.install()
+
+    def upgrade(self):
+        # clean up things from previous versions
+        # TODO: this is not the correct way to do it
+        self.remove_start_stop()
 
 def uninstall(name, options):
     pass
