@@ -88,9 +88,9 @@ class Recipe(object):
         ##self.options['http_port'] = self.options.get('http_port', '8081')
         ##self.options['wps_url'] = self.options.get('wps_url', 'http://localhost:8091/wps')
         ##self.options['thredds_url'] = self.options.get('thredds_url', 'http://localhost:8080/thredds')
-        ##self.options['proxy_enabled'] = self.options.get('proxy-enabled', 'false')
+        self.options['proxy_enabled'] = self.options.get('proxy-enabled', 'false')
         ##self.options['superuser_enabled'] = self.options.get('superuser-enabled', 'false')
-        self.master =  conda.as_bool(self.options.get('master', 'false'))
+        ##self.master =  conda.as_bool(self.options.get('master', 'false'))
         ##self.proxy_enabled = conda.as_bool(self.options['proxy_enabled'])
 
         self.input = options.get('input')
@@ -100,8 +100,8 @@ class Recipe(object):
     def install(self):
         installed = []
         installed += list(self.install_nginx())
-        if self.master:
-            installed += list(self.install_config())
+        ##if self.master:
+        installed += list(self.install_config())
         #if self.master and self.proxy_enabled:
         #    installed += list(self.install_proxy_config())
         #    installed += list(self.install_cert())
