@@ -1,10 +1,12 @@
 Changes
 *******
 
-0.1.6 (current)
+0.1.6 (2014-11-11)
 ==================
 
+* Removed proxy configuration.
 * Fixed supervisor config: nginx didn't stop.
+* nginx is started as supervisor service.
 
 0.1.5 (2014-10-27)
 ==================
