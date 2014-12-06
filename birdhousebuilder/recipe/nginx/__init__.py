@@ -32,9 +32,9 @@ class Recipe(object):
         installed += list(self.setup_service())
         installed += list(self.install_sites())
 
-        self.upgrade()
+        #self.upgrade()
         
-        return installed
+        return tuple()
 
     def install_nginx(self):
         script = conda.Recipe(
@@ -102,7 +102,11 @@ class Recipe(object):
         return [output]
     
     def update(self):
-        return self.install()
+        #self.install_nginx()
+        self.install_config()
+        self.setup_service()
+        self.install_sites()
+        return tuple()
 
     def upgrade(self):
         # clean up things from previous versions
