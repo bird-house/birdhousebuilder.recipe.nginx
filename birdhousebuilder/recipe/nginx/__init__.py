@@ -16,8 +16,10 @@ class Recipe(object):
     def __init__(self, buildout, name, options):
         self.buildout, self.name, self.options = buildout, name, options
         b_options = buildout['buildout']
-        self.prefix = b_options.get('anaconda-home', conda.anaconda_home())
+
+        self.prefix = self.options.get('prefix', conda.prefix())
         self.options['prefix'] = self.prefix
+
         self.options['hostname'] = self.options.get('hostname', 'localhost')
         self.options['proxy_enabled'] = self.options.get('proxy-enabled', 'false')
 

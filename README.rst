@@ -8,8 +8,7 @@ Introduction
 ************
 
 ``birdhousebuilder.recipe.nginx`` is a `Buildout`_ recipe to install `Nginx`_ from an `Anaconda`_ channel and to deploy a site configuration for your application.
-
-Birdhousebuilder recipes are used to build Web Processing Service components (Phoenix, Malleefowl, Nighthawk, FlyingPigeon, ...) of the `Birdhouse`_ project. All Birdhousebuilder recipes need an existing `Anaconda`_ installation.  
+This recipe is used by the `Birdhouse`_ project. 
 
 .. _`Buildout`: http://buildout.org/
 .. _`Anaconda`: http://continuum.io/
@@ -20,9 +19,9 @@ Birdhousebuilder recipes are used to build Web Processing Service components (Ph
 Usage
 *****
 
-The recipe requires that Anaconda is already installed. It assumes that Anaconda is installed at the default location in your home directory ``~/anaconda``. Otherwise you need to set the Buildout option ``anaconda-home``.
+The recipe requires that Anaconda is already installed. It assumes that the default Anaconda location is in your home directory ``~/anaconda``. Otherwise you need to set the ``ANACONDA_HOME`` environment variable or the Buildout option ``anaconda-home``.
 
-The recipe will install the ``nginx`` package from a conda channel and deploy a Nginx site configuration for your application. The configuration will be deployed in ``~/anaconda/etc/nginx/conf.d/myapp.conf``. Nginx can be started with ``~/anaconda/etc/init.d/nginx start``.
+The recipe will install the ``nginx`` package from a conda channel in a conda enviroment named ``birdhouse``. The location of the birdhouse environment is ``.conda/envs/birdhouse``. It deploys a Nginx site configuration for your application. The configuration will be deployed in ``~/.conda/envs/birdhouse/etc/nginx/conf.d/myapp.conf``. Nginx can be started with ``~/.conda/envs/birdhouse/etc/init.d/nginx start``.
 
 The recipe depends on ``birdhousebuilder.recipe.conda``.
 
@@ -33,6 +32,15 @@ This recipe supports the following options:
 
 ``anaconda-home``
    Buildout option with the root folder of the Anaconda installation. Default: ``$HOME/anaconda``.
+   The default location can also be set with the environment variable ``ANACONDA_HOME``. Example::
+
+     export ANACONDA_HOME=/opt/anaconda
+
+   Search priority is:
+
+   1. ``anaconda-home`` in ``buildout.cfg``
+   2. ``$ANACONDA_HOME``
+   3. ``$HOME/anaconda``
 
 ``input``
    The path to a `Mako`_ template with a Nginx configuration for your application.
