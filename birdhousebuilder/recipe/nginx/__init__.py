@@ -10,6 +10,42 @@ from birdhousebuilder.recipe import conda, supervisor
 
 templ_config = Template(filename=os.path.join(os.path.dirname(__file__), "nginx.conf"))
 
+def generate_cert(out, org, org_unit, hostname):
+    """
+    Generates self signed certificate for https connections.
+
+    Returns True on success.
+    """
+    from OpenSSL import crypto
+    from uuid import uuid4
+    try:
+        k = crypto.PKey()
+        k.generate_key(crypto.TYPE_RSA, 2048)
+        cert = crypto.X509()
+        cert.get_subject().O = org
+        cert.get_subject().OU = org_unit
+        cert.get_subject().CN = hostname
+        sequence = int(uuid4().hex, 16)
+        cert.set_serial_number(sequence)
+        # valid right now
+        cert.gmtime_adj_notBefore(0)
+        # valid for 365 days
+        cert.gmtime_adj_notAfter(31536000)
+        cert.set_issuer(cert.get_subject())
+        cert.set_pubkey(k)
+        cert.sign(k, 'sha256')
+        # write to cert and key to same file
+        open(out, "wt").write(
+        crypto.dump_certificate(crypto.FILETYPE_PEM, cert))
+        open(out, "at").write(
+        crypto.dump_privatekey(crypto.FILETYPE_PEM, k))
+        import os, stat
+        os.chmod(out, stat.S_IRUSR|stat.S_IWUSR)
+    except:
+        return False
+    else:
+        return True
+
 class Recipe(object):
     """This recipe is used by zc.buildout"""
 
@@ -19,8 +55,9 @@ class Recipe(object):
 
         self.prefix = self.options.get('prefix', conda.prefix())
         self.options['prefix'] = self.prefix
-
         self.options['hostname'] = self.options.get('hostname', 'localhost')
+        self.options['organization'] = self.options.get('organization', 'Birdhouse')
+        self.options['organization_unit'] = self.options.get('organization_unit', 'Demo')
 
         self.input = options.get('input')
         self.options['sites'] = self.options.get('sites', name)
@@ -29,26 +66,35 @@ class Recipe(object):
     def install(self):
         installed = []
         installed += list(self.install_nginx())
+        installed += list(self.install_cert())
         installed += list(self.install_config())
         installed += list(self.setup_service())
         installed += list(self.install_sites())
-
-        #self.upgrade()
-        
         return tuple()
 
     def install_nginx(self):
         script = conda.Recipe(
             self.buildout,
             self.name,
-            {'pkgs': 'nginx'})
+            {'pkgs': 'nginx openssl pyopenssl'})
 
         conda.makedirs( os.path.join(self.prefix, 'etc', 'nginx') )
         conda.makedirs( os.path.join(self.prefix, 'var', 'cache', 'nginx') )
         conda.makedirs( os.path.join(self.prefix, 'var', 'log', 'nginx') )
         
         return script.install()
-        
+
+    def install_cert(self):
+        certfile = os.path.join(self.prefix, 'etc', 'nginx', 'cert.pem')
+        if generate_cert(
+                out=certfile,
+                org=self.options.get('organization'),
+                org_unit=self.options.get('organization_unit'),
+                hostname=self.options.get('hostname')):
+            return [certfile]
+        else:
+            return []
+    
     def install_config(self):
         """
         install nginx main config file
@@ -104,6 +150,7 @@ class Recipe(object):
     
     def update(self):
         #self.install_nginx()
+        self.install_cert()
         self.install_config()
         self.setup_service()
         self.install_sites()

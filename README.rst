@@ -48,6 +48,12 @@ This recipe supports the following options:
 ``sites``
    The name of your application.
 
+``organization`` 
+   The organization name for the certificate. Default: ``Birdhouse``
+
+``organization_unit``
+   The organization unit for the certificate. Default: ``Demo`` 
+
 All additional options can be used as parameters in your Nginx site configuration. The ``anaconda-home`` Path is available as ``prefix`` parameter.
 
 

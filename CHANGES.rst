@@ -1,6 +1,11 @@
 Changes
 *******
 
+0.2.1 (2015-06-23)
+==================
+
+* generates self-signed certificate for https.
+
 0.2.0 (2015-02-24)
 ==================
 
