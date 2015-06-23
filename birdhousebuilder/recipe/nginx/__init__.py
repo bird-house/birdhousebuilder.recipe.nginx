@@ -21,7 +21,6 @@ class Recipe(object):
         self.options['prefix'] = self.prefix
 
         self.options['hostname'] = self.options.get('hostname', 'localhost')
-        self.options['proxy_enabled'] = self.options.get('proxy-enabled', 'false')
 
         self.input = options.get('input')
         self.options['sites'] = self.options.get('sites', name)
