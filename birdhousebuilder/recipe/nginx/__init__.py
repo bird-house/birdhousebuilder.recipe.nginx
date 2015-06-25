@@ -56,6 +56,7 @@ class Recipe(object):
         self.prefix = self.options.get('prefix', conda.prefix())
         self.options['prefix'] = self.prefix
         self.options['hostname'] = self.options.get('hostname', 'localhost')
+        self.options['user'] = self.options.get('user', '')
         self.options['organization'] = self.options.get('organization', 'Birdhouse')
         self.options['organization_unit'] = self.options.get('organization_unit', 'Demo')
 
@@ -114,10 +115,12 @@ class Recipe(object):
         return [output]
 
     def setup_service(self):
+        # for nginx only set chmod_user in supervisor!
         script = supervisor.Recipe(
             self.buildout,
             self.name,
-            {'program': 'nginx',
+            {'chown': self.options.get('user', ''),
+             'program': 'nginx',
              'command': '%s/sbin/nginx -p %s -c %s/etc/nginx/nginx.conf -g "daemon off;"' % (self.prefix, self.prefix, self.prefix),
              'directory': '%s/sbin' % (self.prefix),
              })
