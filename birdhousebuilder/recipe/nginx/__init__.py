@@ -87,7 +87,10 @@ class Recipe(object):
 
     def install_cert(self):
         certfile = os.path.join(self.prefix, 'etc', 'nginx', 'cert.pem')
-        if generate_cert(
+        if os.path.isfile(certfile):
+            # Skip cert generation if file already exists.
+            return []
+        elif generate_cert(
                 out=certfile,
                 org=self.options.get('organization'),
                 org_unit=self.options.get('organization_unit'),
