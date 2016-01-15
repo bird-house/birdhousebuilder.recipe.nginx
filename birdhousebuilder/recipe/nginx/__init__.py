@@ -57,6 +57,9 @@ class Recipe(object):
         self.options['prefix'] = self.prefix
         self.options['hostname'] = self.options.get('hostname', 'localhost')
         self.options['user'] = self.options.get('user', '')
+        self.options['worker_processes'] = self.options.get('worker_processes', '1')
+        self.options['keepalive_timeout'] = self.options.get('keepalive_timeout', '75s')
+        self.options['sendfile'] = self.options.get('sendfile', 'off')
         self.options['organization'] = self.options.get('organization', 'Birdhouse')
         self.options['organization_unit'] = self.options.get('organization_unit', 'Demo')
 
@@ -64,16 +67,16 @@ class Recipe(object):
         self.options['sites'] = self.options.get('sites', name)
         self.sites = self.options['sites']
 
-    def install(self):
+    def install(self, update=False):
         installed = []
-        installed += list(self.install_nginx())
-        installed += list(self.install_cert())
-        installed += list(self.install_config())
-        installed += list(self.setup_service())
-        installed += list(self.install_sites())
-        return tuple()
+        installed += list(self.install_nginx(update))
+        installed += list(self.install_cert(update))
+        installed += list(self.install_config(update))
+        installed += list(self.setup_service(update))
+        installed += list(self.install_sites(update))
+        return installed
 
-    def install_nginx(self):
+    def install_nginx(self, update):
         script = conda.Recipe(
             self.buildout,
             self.name,
@@ -82,10 +85,13 @@ class Recipe(object):
         conda.makedirs( os.path.join(self.prefix, 'etc', 'nginx') )
         conda.makedirs( os.path.join(self.prefix, 'var', 'cache', 'nginx') )
         conda.makedirs( os.path.join(self.prefix, 'var', 'log', 'nginx') )
-        
-        return script.install()
 
-    def install_cert(self):
+        if update:
+            return script.update()
+        else:
+            return script.install()
+
+    def install_cert(self, update):
         certfile = os.path.join(self.prefix, 'etc', 'nginx', 'cert.pem')
         if os.path.isfile(certfile):
             # Skip cert generation if file already exists.
@@ -95,11 +101,11 @@ class Recipe(object):
                 org=self.options.get('organization'),
                 org_unit=self.options.get('organization_unit'),
                 hostname=self.options.get('hostname')):
-            return [certfile]
+            return []
         else:
             return []
     
-    def install_config(self):
+    def install_config(self, update):
         """
         install nginx main config file
         """
@@ -117,7 +123,7 @@ class Recipe(object):
             fp.write(result)
         return [output]
 
-    def setup_service(self):
+    def setup_service(self, update):
         # for nginx only set chmod_user in supervisor!
         script = supervisor.Recipe(
             self.buildout,
@@ -127,9 +133,9 @@ class Recipe(object):
              'command': '%s/sbin/nginx -p %s -c %s/etc/nginx/nginx.conf -g "daemon off;"' % (self.prefix, self.prefix, self.prefix),
              'directory': '%s/sbin' % (self.prefix),
              })
-        return script.install()
+        return script.install(update)
 
-    def install_sites(self):
+    def install_sites(self, update):
         templ_sites = Template(filename=self.input)
         result = templ_sites.render(**self.options)
 
@@ -155,17 +161,13 @@ class Recipe(object):
         return [output]
     
     def update(self):
-        #self.install_nginx()
-        self.install_cert()
-        self.install_config()
-        self.setup_service()
-        self.install_sites()
-        return tuple()
-
+        return self.install(update=True)
+    
     def upgrade(self):
         # clean up things from previous versions
         # TODO: this is not the correct way to do it
-        self.remove_start_stop()
+        #self.remove_start_stop()
+        pass
 
 def uninstall(name, options):
     pass
