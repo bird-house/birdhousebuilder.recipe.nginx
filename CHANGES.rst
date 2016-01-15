@@ -1,6 +1,12 @@
 Changes
 *******
 
+0.2.4 (2016-01-15)
+==================
+
+* disabled sendfile in nginx.conf.
+* ``worker_processes`` is now configurable.
+
 0.2.3 (2015-07-06)
 ==================
 

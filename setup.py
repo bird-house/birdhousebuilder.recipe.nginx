@@ -5,7 +5,7 @@ This module contains the tool of birdhousebuilder.recipe.nginx
 from setuptools import find_packages
 from setuptools import setup
 
-version = '0.2.3'
+version = '0.2.4'
 description = 'A Buildout recipe to install and configure Nginx with Anaconda.'
 long_description = (
     open('README.rst').read() + '\n' +

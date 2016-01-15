@@ -48,6 +48,9 @@ This recipe supports the following options:
 ``sites``
    The name of your application.
 
+``worker_processes``
+   The number of worker processes started (use ``auto`` for dynamic value). Default: 1
+
 ``organization`` 
    The organization name for the certificate. Default: ``Birdhouse``
 
