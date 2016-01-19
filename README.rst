@@ -51,6 +51,9 @@ This recipe supports the following options:
 ``worker_processes``
    The number of worker processes started (use ``auto`` for dynamic value). Default: 1
 
+``keepalive_timeout``
+   Timeout during keep-alive client connection will stay open on the server side. Default: 5s
+
 ``organization`` 
    The organization name for the certificate. Default: ``Birdhouse``
 

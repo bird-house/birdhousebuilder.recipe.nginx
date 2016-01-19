@@ -1,6 +1,12 @@
 Changes
 *******
 
+0.2.5 (2016-01-19)
+==================
+
+* set keepalive_timeout to 5s (can be overwritten in options).
+
+
 0.2.4 (2016-01-15)
 ==================
 
