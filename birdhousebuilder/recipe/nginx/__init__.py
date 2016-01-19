@@ -58,7 +58,7 @@ class Recipe(object):
         self.options['hostname'] = self.options.get('hostname', 'localhost')
         self.options['user'] = self.options.get('user', '')
         self.options['worker_processes'] = self.options.get('worker_processes', '1')
-        self.options['keepalive_timeout'] = self.options.get('keepalive_timeout', '75s')
+        self.options['keepalive_timeout'] = self.options.get('keepalive_timeout', '5s')
         self.options['sendfile'] = self.options.get('sendfile', 'off')
         self.options['organization'] = self.options.get('organization', 'Birdhouse')
         self.options['organization_unit'] = self.options.get('organization_unit', 'Demo')
