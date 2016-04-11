@@ -3,10 +3,15 @@
 """Recipe nginx"""
 
 import os
+import stat
+from uuid import uuid4
 from mako.template import Template
 
 import zc.buildout
 from birdhousebuilder.recipe import conda, supervisor
+
+import logging
+logger = logging.getLogger(__name__)
 
 templ_config = Template(filename=os.path.join(os.path.dirname(__file__), "nginx.conf"))
 
@@ -16,9 +21,8 @@ def generate_cert(out, org, org_unit, hostname):
 
     Returns True on success.
     """
-    from OpenSSL import crypto
-    from uuid import uuid4
     try:
+        from OpenSSL import crypto
         k = crypto.PKey()
         k.generate_key(crypto.TYPE_RSA, 2048)
         cert = crypto.X509()
@@ -39,9 +43,10 @@ def generate_cert(out, org, org_unit, hostname):
         crypto.dump_certificate(crypto.FILETYPE_PEM, cert))
         open(out, "at").write(
         crypto.dump_privatekey(crypto.FILETYPE_PEM, k))
-        import os, stat
+
         os.chmod(out, stat.S_IRUSR|stat.S_IWUSR)
     except:
+        logger.exception("Certificate generation has failed!")
         return False
     else:
         return True
@@ -93,7 +98,10 @@ class Recipe(object):
 
     def install_cert(self, update):
         certfile = os.path.join(self.prefix, 'etc', 'nginx', 'cert.pem')
-        if os.path.isfile(certfile):
+        if update:
+            # Skip cert generation on update mode
+	    return []
+	elif os.path.isfile(certfile):
             # Skip cert generation if file already exists.
             return []
         elif generate_cert(
