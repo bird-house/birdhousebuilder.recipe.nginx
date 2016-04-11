@@ -1,6 +1,11 @@
 Changes
 *******
 
+0.2.7 (2016-04-dd)
+==================
+
+* fail save with log message when cert generation fails.
+
 0.2.6 (2016-04-11)
 ==================
 
