@@ -4,16 +4,20 @@
 
 import os
 import stat
+from shutil import copy2
 from uuid import uuid4
 from mako.template import Template
 
 import zc.buildout
 from birdhousebuilder.recipe import conda, supervisor
+from birdhousebuilder.recipe.conda import conda_envs, anaconda_home
 
 import logging
 logger = logging.getLogger(__name__)
 
 templ_config = Template(filename=os.path.join(os.path.dirname(__file__), "nginx.conf"))
+templ_cmd = Template(
+    '${env_path}/sbin/nginx -p ${prefix} -c ${prefix}/etc/nginx/nginx.conf -g "daemon off;"')
 
 def generate_cert(out, org, org_unit, hostname):
     """
@@ -58,8 +62,16 @@ class Recipe(object):
         self.buildout, self.name, self.options = buildout, name, options
         b_options = buildout['buildout']
 
+        self.anaconda_home = b_options.get('anaconda-home', anaconda_home())
+        b_options['anaconda-home'] = self.anaconda_home
+
         self.prefix = self.options.get('prefix', conda.prefix())
         self.options['prefix'] = self.prefix
+
+        self.env = options.get('env', b_options.get('conda-env'))
+        self.env_path = conda_envs(self.anaconda_home).get(self.env, self.anaconda_home)
+        self.options['env_path'] = self.env_path
+        
         self.options['hostname'] = self.options.get('hostname', 'localhost')
         self.options['user'] = self.options.get('user', '')
         self.options['worker_processes'] = self.options.get('worker_processes', '1')
@@ -100,8 +112,8 @@ class Recipe(object):
         certfile = os.path.join(self.prefix, 'etc', 'nginx', 'cert.pem')
         if update:
             # Skip cert generation on update mode
-	    return []
-	elif os.path.isfile(certfile):
+            return []
+        elif os.path.isfile(certfile):
             # Skip cert generation if file already exists.
             return []
         elif generate_cert(
@@ -119,7 +131,8 @@ class Recipe(object):
         """
         result = templ_config.render(**self.options)
 
-        output = os.path.join(self.prefix, 'etc', 'nginx', 'nginx.conf')
+        config_path = os.path.join(self.prefix, 'etc', 'nginx')
+        output = os.path.join(config_path, 'nginx.conf')
         conda.makedirs(os.path.dirname(output))
         
         try:
@@ -129,6 +142,13 @@ class Recipe(object):
 
         with open(output, 'wt') as fp:
             fp.write(result)
+
+        # copy additional files
+        try:
+            copy2(os.path.join(os.path.dirname(__file__), "mime.types"), config_path)
+        except:
+            pass
+        
         return [output]
 
     def setup_service(self, update):
@@ -138,8 +158,8 @@ class Recipe(object):
             self.name,
             {'chown': self.options.get('user', ''),
              'program': 'nginx',
-             'command': '%s/sbin/nginx -p %s -c %s/etc/nginx/nginx.conf -g "daemon off;"' % (self.prefix, self.prefix, self.prefix),
-             'directory': '%s/sbin' % (self.prefix),
+             'command': templ_cmd.render(**self.options),
+             'directory': '%s/sbin' % (self.env_path),
              })
         return script.install(update)
 
