@@ -10,9 +10,10 @@ from mako.template import Template
 
 import zc.buildout
 from birdhousebuilder.recipe import conda, supervisor
-from birdhousebuilder.recipe.conda import conda_envs, anaconda_home
+from birdhousebuilder.recipe.conda import conda_env_path
 
 import logging
+logging.basicConfig(format='%(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 templ_config = Template(filename=os.path.join(os.path.dirname(__file__), "nginx.conf"))
@@ -62,14 +63,10 @@ class Recipe(object):
         self.buildout, self.name, self.options = buildout, name, options
         b_options = buildout['buildout']
 
-        self.anaconda_home = b_options.get('anaconda-home', anaconda_home())
-        b_options['anaconda-home'] = self.anaconda_home
-
         self.prefix = self.options.get('prefix', conda.prefix())
         self.options['prefix'] = self.prefix
 
-        self.env = options.get('env', b_options.get('conda-env'))
-        self.env_path = conda_envs(self.anaconda_home).get(self.env, self.anaconda_home)
+        self.env_path = conda_env_path(buildout, options)
         self.options['env_path'] = self.env_path
         
         self.options['hostname'] = self.options.get('hostname', 'localhost')
