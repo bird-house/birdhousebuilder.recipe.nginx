@@ -12,10 +12,6 @@ import zc.buildout
 from birdhousebuilder.recipe import conda, supervisor
 from birdhousebuilder.recipe.conda import conda_env_path
 
-import logging
-logging.basicConfig(format='%(message)s', level=logging.INFO)
-logger = logging.getLogger(__name__)
-
 templ_config = Template(filename=os.path.join(os.path.dirname(__file__), "nginx.conf"))
 templ_cmd = Template(
     '${env_path}/sbin/nginx -p ${prefix} -c ${prefix}/etc/nginx/nginx.conf -g "daemon off;"')
@@ -51,7 +47,7 @@ def generate_cert(out, org, org_unit, hostname):
 
         os.chmod(out, stat.S_IRUSR|stat.S_IWUSR)
     except:
-        logger.exception("Certificate generation has failed!")
+        print("Certificate generation has failed!")
         return False
     else:
         return True
@@ -63,7 +59,7 @@ class Recipe(object):
         self.buildout, self.name, self.options = buildout, name, options
         b_options = buildout['buildout']
 
-        self.prefix = self.options.get('prefix', conda.prefix())
+        self.prefix = b_options.get('birdhouse-home', "/opt/birdhouse")
         self.options['prefix'] = self.prefix
 
         self.env_path = conda_env_path(buildout, options)
@@ -100,10 +96,7 @@ class Recipe(object):
         conda.makedirs( os.path.join(self.prefix, 'var', 'cache', 'nginx') )
         conda.makedirs( os.path.join(self.prefix, 'var', 'log', 'nginx') )
 
-        if update:
-            return script.update()
-        else:
-            return script.install()
+        return script.install(update=update)
 
     def install_cert(self, update):
         certfile = os.path.join(self.prefix, 'etc', 'nginx', 'cert.pem')
