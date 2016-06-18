@@ -1,9 +1,10 @@
 Changes
 *******
 
-0.2.7 (2016-04-dd)
+0.3.0 (2016-06-18)
 ==================
 
+* using zc.recipe.deployment
 * fail save with log message when cert generation fails.
 
 0.2.6 (2016-04-11)
