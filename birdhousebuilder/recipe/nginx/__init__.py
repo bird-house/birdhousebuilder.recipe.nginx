@@ -14,7 +14,7 @@ from birdhousebuilder.recipe.conda import conda_env_path
 
 templ_config = Template(filename=os.path.join(os.path.dirname(__file__), "nginx.conf"))
 templ_cmd = Template(
-    '${env_path}/sbin/nginx -p ${prefix} -c ${prefix}/etc/nginx/nginx.conf -g "daemon off;"')
+    '${env_path}/sbin/nginx -p ${prefix} -c ${etc_prefix}/nginx/nginx.conf -g "daemon off;"')
 
 def generate_cert(out, org, org_unit, hostname):
     """
@@ -59,8 +59,16 @@ class Recipe(object):
         self.buildout, self.name, self.options = buildout, name, options
         b_options = buildout['buildout']
 
-        self.prefix = b_options.get('birdhouse-home', "/opt/birdhouse")
-        self.options['prefix'] = self.prefix
+        deployment = options.get('deployment')
+        if deployment:
+            self.options['prefix'] = buildout[deployment].get('prefix')
+            self.options['etc_prefix'] = buildout[deployment].get('etc-prefix')
+            self.options['var_prefix'] = buildout[deployment].get('var-prefix')
+        else:
+            self.options['prefix'] = os.path.join(buildout['buildout']['parts-directory'], self.name)
+            self.options['etc_prefix'] = os.path.join(self.options['prefix'], 'etc')
+            self.options['var_prefix'] = os.path.join(self.options['prefix'], 'var')
+        self.prefix = self.options['prefix']
 
         self.env_path = conda_env_path(buildout, options)
         self.options['env_path'] = self.env_path
@@ -92,14 +100,14 @@ class Recipe(object):
             self.name,
             {'pkgs': 'nginx openssl pyopenssl cryptography'})
 
-        conda.makedirs( os.path.join(self.prefix, 'etc', 'nginx') )
-        conda.makedirs( os.path.join(self.prefix, 'var', 'cache', 'nginx') )
-        conda.makedirs( os.path.join(self.prefix, 'var', 'log', 'nginx') )
+        conda.makedirs( os.path.join(self.options['etc_prefix'], 'nginx') )
+        conda.makedirs( os.path.join(self.options['var_prefix'], 'cache', 'nginx') )
+        conda.makedirs( os.path.join(self.options['var_prefix'], 'log', 'nginx') )
 
         return script.install(update=update)
 
     def install_cert(self, update):
-        certfile = os.path.join(self.prefix, 'etc', 'nginx', 'cert.pem')
+        certfile = os.path.join(self.options['etc_prefix'], 'nginx', 'cert.pem')
         if update:
             # Skip cert generation on update mode
             return []
@@ -121,7 +129,7 @@ class Recipe(object):
         """
         result = templ_config.render(**self.options)
 
-        config_path = os.path.join(self.prefix, 'etc', 'nginx')
+        config_path = os.path.join(self.options['etc_prefix'], 'nginx')
         output = os.path.join(config_path, 'nginx.conf')
         conda.makedirs(os.path.dirname(output))
         
@@ -157,7 +165,7 @@ class Recipe(object):
         templ_sites = Template(filename=self.input)
         result = templ_sites.render(**self.options)
 
-        output = os.path.join(self.prefix, 'etc', 'nginx', 'conf.d', self.sites + '.conf')
+        output = os.path.join(self.options['etc_prefix'], 'nginx', 'conf.d', self.sites + '.conf')
         conda.makedirs(os.path.dirname(output))
         
         try:
@@ -170,7 +178,7 @@ class Recipe(object):
         return [output]
 
     def remove_start_stop(self):
-        output = os.path.join(self.prefix, 'etc', 'init.d', 'nginx')
+        output = os.path.join(self.options['etc_prefix'], 'init.d', 'nginx')
         
         try:
             os.remove(output)
