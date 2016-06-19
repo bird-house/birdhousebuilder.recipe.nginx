@@ -59,7 +59,7 @@ class Recipe(object):
         self.buildout, self.name, self.options = buildout, name, options
         b_options = buildout['buildout']
 
-        deployment = options.get('deployment')
+        deployment = self.deployment = options.get('deployment')
         if deployment:
             self.options['prefix'] = buildout[deployment].get('prefix')
             self.options['etc_prefix'] = buildout[deployment].get('etc-prefix')
@@ -154,7 +154,8 @@ class Recipe(object):
         script = supervisor.Recipe(
             self.buildout,
             self.name,
-            {'chown': self.options.get('user', ''),
+            {'deployment': self.deployment,
+             'chown': self.options.get('user', ''),
              'program': 'nginx',
              'command': templ_cmd.render(**self.options),
              'directory': '%s/sbin' % (self.env_path),
