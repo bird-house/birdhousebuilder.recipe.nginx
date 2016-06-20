@@ -7,6 +7,7 @@ import stat
 from shutil import copy2
 from uuid import uuid4
 from mako.template import Template
+import logging
 
 import zc.buildout
 from birdhousebuilder.recipe import conda, supervisor
@@ -59,15 +60,21 @@ class Recipe(object):
         self.buildout, self.name, self.options = buildout, name, options
         b_options = buildout['buildout']
 
+        self.logger = logging.getLogger(name)
+
         deployment = self.deployment = options.get('deployment')
         if deployment:
             self.options['prefix'] = buildout[deployment].get('prefix')
             self.options['etc_prefix'] = buildout[deployment].get('etc-prefix')
             self.options['var_prefix'] = buildout[deployment].get('var-prefix')
         else:
-            self.options['prefix'] = os.path.join(buildout['buildout']['parts-directory'], self.name)
+            self.options['prefix'] = os.path.join(buildout['buildout']['directory'])
             self.options['etc_prefix'] = os.path.join(self.options['prefix'], 'etc')
             self.options['var_prefix'] = os.path.join(self.options['prefix'], 'var')
+        self.options['etc_directory'] = os.path.join(self.options['etc_prefix'], 'nginx')
+        self.options['lib_directory'] = os.path.join(self.options['var_prefix'], 'lib', 'nginx')
+        self.options['log_directory'] = os.path.join(self.options['var_prefix'], 'log', 'nginx')
+        self.options['cache_directory'] = os.path.join(self.options['var_prefix'], 'cache', 'nginx')
         self.prefix = self.options['prefix']
 
         self.env_path = conda_env_path(buildout, options)
@@ -100,14 +107,19 @@ class Recipe(object):
             self.name,
             {'pkgs': 'nginx openssl pyopenssl cryptography'})
 
-        conda.makedirs( os.path.join(self.options['etc_prefix'], 'nginx') )
-        conda.makedirs( os.path.join(self.options['var_prefix'], 'cache', 'nginx') )
-        conda.makedirs( os.path.join(self.options['var_prefix'], 'log', 'nginx') )
+        if not os.path.exists( self.options['etc_directory'] ):
+            os.makedirs( self.options['etc_directory'] )
+        if not os.path.exists( self.options['lib_directory'] ):
+            os.makedirs( self.options['lib_directory'] )
+        if not os.path.exists( self.options['cache_directory'] ):
+            os.makedirs( self.options['cache_directory'] )
+        if not os.path.exists( self.options['log_directory'] ):
+            os.makedirs( self.options['log_directory'] )
 
         return script.install(update=update)
 
     def install_cert(self, update):
-        certfile = os.path.join(self.options['etc_prefix'], 'nginx', 'cert.pem')
+        certfile = os.path.join(self.options['etc_directory'], 'cert.pem')
         if update:
             # Skip cert generation on update mode
             return []
@@ -127,27 +139,19 @@ class Recipe(object):
         """
         install nginx main config file
         """
-        result = templ_config.render(**self.options)
+        text = templ_config.render(**self.options)
+        conf_path = os.path.join(self.options['etc_directory'], 'nginx.conf')
 
-        config_path = os.path.join(self.options['etc_prefix'], 'nginx')
-        output = os.path.join(config_path, 'nginx.conf')
-        conda.makedirs(os.path.dirname(output))
-        
-        try:
-            os.remove(output)
-        except OSError:
-            pass
-
-        with open(output, 'wt') as fp:
-            fp.write(result)
+        with open(conf_path, 'wt') as fp:
+            fp.write(text)
 
         # copy additional files
         try:
-            copy2(os.path.join(os.path.dirname(__file__), "mime.types"), config_path)
+            copy2(os.path.join(os.path.dirname(__file__), "mime.types"), conf_path)
         except:
             pass
         
-        return [output]
+        return [conf_path]
 
     def setup_service(self, update):
         # for nginx only set chmod_user in supervisor!
@@ -164,36 +168,22 @@ class Recipe(object):
 
     def install_sites(self, update):
         templ_sites = Template(filename=self.input)
-        result = templ_sites.render(**self.options)
+        text = templ_sites.render(**self.options)
 
-        output = os.path.join(self.options['etc_prefix'], 'nginx', 'conf.d', self.sites + '.conf')
-        conda.makedirs(os.path.dirname(output))
+        conf_path = os.path.join(self.options['etc_directory'], 'conf.d', self.sites + '.conf')
+        if not os.path.exists(os.path.dirname(conf_path)):
+            os.makedirs(os.path.dirname(conf_path))
         
-        try:
-            os.remove(output)
-        except OSError:
-            pass
+        with open(conf_path, 'wt') as fp:
+            fp.write(text)
+        return [conf_path]
 
-        with open(output, 'wt') as fp:
-            fp.write(result)
-        return [output]
-
-    def remove_start_stop(self):
-        output = os.path.join(self.options['etc_prefix'], 'init.d', 'nginx')
-        
-        try:
-            os.remove(output)
-        except OSError:
-            pass
-        return [output]
-    
     def update(self):
         return self.install(update=True)
     
     def upgrade(self):
         # clean up things from previous versions
         # TODO: this is not the correct way to do it
-        #self.remove_start_stop()
         pass
 
 def uninstall(name, options):
