@@ -11,7 +11,7 @@ import logging
 
 import zc.buildout
 from birdhousebuilder.recipe import conda, supervisor
-from birdhousebuilder.recipe.conda import conda_env_path
+
 
 templ_config = Template(filename=os.path.join(os.path.dirname(__file__), "nginx.conf"))
 templ_cmd = Template(
@@ -77,7 +77,7 @@ class Recipe(object):
         self.options['cache_directory'] = os.path.join(self.options['var_prefix'], 'cache', 'nginx')
         self.prefix = self.options['prefix']
 
-        self.env_path = conda_env_path(buildout, options)
+        self.env_path = conda.conda_env_path(buildout, options)
         self.options['env_path'] = self.env_path
         
         self.options['hostname'] = self.options.get('hostname', 'localhost')
@@ -158,7 +158,8 @@ class Recipe(object):
         script = supervisor.Recipe(
             self.buildout,
             self.name,
-            {'deployment': self.deployment,
+            {'prefix': self.options['prefix'],
+             'user': self.options['user'],
              'chown': self.options.get('user', ''),
              'program': 'nginx',
              'command': templ_cmd.render(**self.options),
