@@ -145,7 +145,7 @@ class Recipe(object):
 
         # copy additional files
         try:
-            copy2(os.path.join(os.path.dirname(__file__), "mime.types"), conf_path)
+            copy2(os.path.join(os.path.dirname(__file__), "mime.types"), self.options['etc-directory'])
         except:
             pass
         
