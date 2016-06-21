@@ -10,6 +10,8 @@ from mako.template import Template
 import logging
 
 import zc.buildout
+import zc.recipe.deployment
+
 from birdhousebuilder.recipe import conda, supervisor
 
 
@@ -53,6 +55,10 @@ def generate_cert(out, org, org_unit, hostname):
     else:
         return True
 
+def make_dirs(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
+
 class Recipe(object):
     """This recipe is used by zc.buildout"""
 
@@ -60,21 +66,23 @@ class Recipe(object):
         self.buildout, self.name, self.options = buildout, name, options
         b_options = buildout['buildout']
 
+        self.options['name'] = self.options.get('name', self.name)
+        self.name = self.options['name']
+
         self.logger = logging.getLogger(name)
 
-        deployment = self.deployment = options.get('deployment')
-        if deployment:
-            self.options['prefix'] = buildout[deployment].get('prefix')
-            self.options['etc_prefix'] = buildout[deployment].get('etc-prefix')
-            self.options['var_prefix'] = buildout[deployment].get('var-prefix')
-        else:
-            self.options['prefix'] = os.path.join(buildout['buildout']['directory'])
-            self.options['etc_prefix'] = os.path.join(self.options['prefix'], 'etc')
-            self.options['var_prefix'] = os.path.join(self.options['prefix'], 'var')
-        self.options['etc_directory'] = os.path.join(self.options['etc_prefix'], 'nginx')
-        self.options['lib_directory'] = os.path.join(self.options['var_prefix'], 'lib', 'nginx')
-        self.options['log_directory'] = os.path.join(self.options['var_prefix'], 'log', 'nginx')
-        self.options['cache_directory'] = os.path.join(self.options['var_prefix'], 'cache', 'nginx')
+        deployment = zc.recipe.deployment.Install(buildout, "nginx", {
+                                                'prefix': self.options['prefix'],
+                                                'user': self.options['user'],
+                                                'etc-user': self.options['user']})
+        deployment.install()
+        
+        self.options['etc_prefix'] = deployment.options['etc-prefix']
+        self.options['var_prefix'] = deployment.options['var-prefix']
+        self.options['etc-directory'] = deployment.options['etc-directory']
+        self.options['lib_directory'] = deployment.options['lib-directory']
+        self.options['log_directory'] = deployment.options['log-directory']
+        self.options['cache_directory'] = deployment.options['cache-directory']
         self.prefix = self.options['prefix']
 
         self.env_path = conda.conda_env_path(buildout, options)
@@ -89,15 +97,14 @@ class Recipe(object):
         self.options['organization_unit'] = self.options.get('organization_unit', 'Demo')
 
         self.input = options.get('input')
-        self.options['sites'] = self.options.get('sites', name)
-        self.sites = self.options['sites']
+        
 
     def install(self, update=False):
         installed = []
         installed += list(self.install_nginx(update))
         installed += list(self.install_cert(update))
         installed += list(self.install_config(update))
-        installed += list(self.setup_service(update))
+        installed += list(self.install_supervisor(update))
         installed += list(self.install_sites(update))
         return installed
 
@@ -107,19 +114,10 @@ class Recipe(object):
             self.name,
             {'pkgs': 'nginx openssl pyopenssl cryptography'})
 
-        if not os.path.exists( self.options['etc_directory'] ):
-            os.makedirs( self.options['etc_directory'] )
-        if not os.path.exists( self.options['lib_directory'] ):
-            os.makedirs( self.options['lib_directory'] )
-        if not os.path.exists( self.options['cache_directory'] ):
-            os.makedirs( self.options['cache_directory'] )
-        if not os.path.exists( self.options['log_directory'] ):
-            os.makedirs( self.options['log_directory'] )
-
         return script.install(update=update)
 
     def install_cert(self, update):
-        certfile = os.path.join(self.options['etc_directory'], 'cert.pem')
+        certfile = os.path.join(self.options['etc-directory'], 'cert.pem')
         if update:
             # Skip cert generation on update mode
             return []
@@ -140,7 +138,7 @@ class Recipe(object):
         install nginx main config file
         """
         text = templ_config.render(**self.options)
-        conf_path = os.path.join(self.options['etc_directory'], 'nginx.conf')
+        conf_path = os.path.join(self.options['etc-directory'], 'nginx.conf')
 
         with open(conf_path, 'wt') as fp:
             fp.write(text)
@@ -153,7 +151,7 @@ class Recipe(object):
         
         return [conf_path]
 
-    def setup_service(self, update):
+    def install_supervisor(self, update):
         # for nginx only set chmod_user in supervisor!
         script = supervisor.Recipe(
             self.buildout,
@@ -171,9 +169,8 @@ class Recipe(object):
         templ_sites = Template(filename=self.input)
         text = templ_sites.render(**self.options)
 
-        conf_path = os.path.join(self.options['etc_directory'], 'conf.d', self.sites + '.conf')
-        if not os.path.exists(os.path.dirname(conf_path)):
-            os.makedirs(os.path.dirname(conf_path))
+        conf_path = os.path.join(self.options['etc-directory'], 'conf.d', self.name + '.conf')
+        make_dirs(os.path.dirname(conf_path))
         
         with open(conf_path, 'wt') as fp:
             fp.write(text)
