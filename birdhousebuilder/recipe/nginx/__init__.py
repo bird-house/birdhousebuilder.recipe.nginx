@@ -11,9 +11,8 @@ import logging
 
 import zc.buildout
 import zc.recipe.deployment
-
-from birdhousebuilder.recipe import conda, supervisor
-
+import birdhousebuilder.recipe.conda
+from birdhousebuilder.recipe import supervisor
 
 templ_config = Template(filename=os.path.join(os.path.dirname(__file__), "nginx.conf"))
 templ_cmd = Template(
@@ -71,25 +70,27 @@ class Recipe(object):
 
         self.logger = logging.getLogger(name)
 
-        deployment = zc.recipe.deployment.Install(buildout, "nginx", {
+        # deployment layout
+        self.deployment = zc.recipe.deployment.Install(buildout, "nginx", {
                                                 'prefix': self.options['prefix'],
                                                 'user': self.options['user'],
                                                 'etc-user': self.options['user']})
-        deployment.install()
-        
-        self.options['etc_prefix'] = deployment.options['etc-prefix']
-        self.options['var_prefix'] = deployment.options['var-prefix']
-        self.options['etc-directory'] = deployment.options['etc-directory']
-        self.options['lib_directory'] = deployment.options['lib-directory']
-        self.options['log_directory'] = deployment.options['log-directory']
-        self.options['cache_directory'] = deployment.options['cache-directory']
+        self.options['etc-prefix'] = self.options['etc_prefix'] = self.deployment.options['etc-prefix']
+        self.options['var-prefix'] = self.options['var_prefix'] = self.deployment.options['var-prefix']
+        self.options['etc-directory'] = self.deployment.options['etc-directory']
+        self.options['lib-directory'] = self.options['lib_directory'] = self.deployment.options['lib-directory']
+        self.options['log-directory'] = self.options['log_directory'] = self.deployment.options['log-directory']
+        self.options['cache-directory'] = self.options['cache_directory'] = self.deployment.options['cache-directory']
         self.prefix = self.options['prefix']
 
-        self.env_path = conda.conda_env_path(buildout, options)
-        self.options['env_path'] = self.env_path
-        
+        # conda environment path
+        self.conda = birdhousebuilder.recipe.conda.Recipe(self.buildout, self.name,
+                                                          {'pkgs': 'nginx openssl pyopenssl cryptography'})
+        self.env_path = self.conda.options['env-path']
+        self.options['env-path'] = self.options['env_path'] = self.env_path
+
+        # config options     
         self.options['hostname'] = self.options.get('hostname', 'localhost')
-        self.options['user'] = self.options.get('user', '')
         self.options['worker_processes'] = self.options.get('worker_processes', '1')
         self.options['keepalive_timeout'] = self.options.get('keepalive_timeout', '5s')
         self.options['sendfile'] = self.options.get('sendfile', 'off')
@@ -101,20 +102,14 @@ class Recipe(object):
 
     def install(self, update=False):
         installed = []
-        installed += list(self.install_nginx(update))
+        if not update:
+            installed += list(self.deployment.install())
+        installed += list(self.conda.install(update))
         installed += list(self.install_cert(update))
         installed += list(self.install_config(update))
         installed += list(self.install_supervisor(update))
         installed += list(self.install_sites(update))
         return installed
-
-    def install_nginx(self, update):
-        script = conda.Recipe(
-            self.buildout,
-            self.name,
-            {'pkgs': 'nginx openssl pyopenssl cryptography'})
-
-        return script.install(update=update)
 
     def install_cert(self, update):
         certfile = os.path.join(self.options['etc-directory'], 'cert.pem')
