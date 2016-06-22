@@ -2,7 +2,9 @@
 birdhousebuilder.recipe.nginx
 *****************************
 
-.. contents::
+.. image:: https://travis-ci.org/bird-house/birdhousebuilder.recipe.nginx.svg?branch=master
+   :target: https://travis-ci.org/bird-house/birdhousebuilder.recipe.nginx
+   :alt: Travis Build
 
 Introduction
 ************
@@ -42,11 +44,11 @@ This recipe supports the following options:
    2. ``$ANACONDA_HOME``
    3. ``$HOME/anaconda``
 
-``input``
-   The path to a `Mako`_ template with a Nginx configuration for your application.
-
 ``name``
    The name of your application.
+
+``input``
+   The path to a `Mako`_ template with a Nginx configuration for your application.
 
 ``worker-processes``
    The number of worker processes started (use ``auto`` for dynamic value). Default: 1
