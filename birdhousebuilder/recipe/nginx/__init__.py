@@ -155,7 +155,7 @@ class Recipe(object):
         # for nginx only set chmod_user in supervisor!
         script = supervisor.Recipe(
             self.buildout,
-            self.name,
+            self.name+'-nginx',
             {'prefix': self.options['prefix'],
              'user': self.options['user'],
              'chown': self.options.get('user', ''),
