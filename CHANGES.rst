@@ -1,9 +1,10 @@
 Changes
 *******
 
-0.3.0 (2016-06-19)
+0.3.0 (2016-06-22)
 ==================
 
+* added conda options env, pkgs, channels.
 * using zc.recipe.deployment
 * fail save with log message when cert generation fails.
 
