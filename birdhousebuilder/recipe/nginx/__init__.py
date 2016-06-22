@@ -77,25 +77,30 @@ class Recipe(object):
                                                 'etc-user': self.options['user']})
         self.options['etc-prefix'] = self.options['etc_prefix'] = self.deployment.options['etc-prefix']
         self.options['var-prefix'] = self.options['var_prefix'] = self.deployment.options['var-prefix']
-        self.options['etc-directory'] = self.deployment.options['etc-directory']
+        self.options['etc-directory'] = self.options['etc_directory'] = self.deployment.options['etc-directory']
         self.options['lib-directory'] = self.options['lib_directory'] = self.deployment.options['lib-directory']
         self.options['log-directory'] = self.options['log_directory'] = self.deployment.options['log-directory']
         self.options['cache-directory'] = self.options['cache_directory'] = self.deployment.options['cache-directory']
         self.prefix = self.options['prefix']
 
         # conda environment path
-        self.conda = birdhousebuilder.recipe.conda.Recipe(self.buildout, self.name,
-                                                          {'pkgs': 'nginx openssl pyopenssl cryptography'})
+        self.options['env'] = self.options.get('env', '')
+        self.options['pkgs'] = self.options.get('pkgs', 'nginx openssl pyopenssl cryptography')
+        self.options['channels'] = self.options.get('channels', 'defaults birdhouse')
+        self.conda = birdhousebuilder.recipe.conda.Recipe(self.buildout, self.name, {
+            'env': self.options['env'],
+            'pkgs': self.options['pkgs'],
+            'channels': self.options['channels'] })
         self.env_path = self.conda.options['env-path']
         self.options['env-path'] = self.options['env_path'] = self.env_path
 
         # config options     
         self.options['hostname'] = self.options.get('hostname', 'localhost')
-        self.options['worker_processes'] = self.options.get('worker_processes', '1')
-        self.options['keepalive_timeout'] = self.options.get('keepalive_timeout', '5s')
+        self.options['worker-processes'] =self.options['worker_processes'] = self.options.get('worker-processes', '1')
+        self.options['keepalive-timeout'] = self.options['keepalive_timeout'] = self.options.get('keepalive-timeout', '5s')
         self.options['sendfile'] = self.options.get('sendfile', 'off')
         self.options['organization'] = self.options.get('organization', 'Birdhouse')
-        self.options['organization_unit'] = self.options.get('organization_unit', 'Demo')
+        self.options['organization-unit'] = self.options.get('organization-unit', 'Demo')
 
         self.input = options.get('input')
         
@@ -122,7 +127,7 @@ class Recipe(object):
         elif generate_cert(
                 out=certfile,
                 org=self.options.get('organization'),
-                org_unit=self.options.get('organization_unit'),
+                org_unit=self.options.get('organization-unit'),
                 hostname=self.options.get('hostname')):
             return []
         else:

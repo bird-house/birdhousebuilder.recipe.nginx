@@ -45,19 +45,19 @@ This recipe supports the following options:
 ``input``
    The path to a `Mako`_ template with a Nginx configuration for your application.
 
-``sites``
+``name``
    The name of your application.
 
-``worker_processes``
+``worker-processes``
    The number of worker processes started (use ``auto`` for dynamic value). Default: 1
 
-``keepalive_timeout``
+``keepalive-timeout``
    Timeout during keep-alive client connection will stay open on the server side. Default: 5s
 
 ``organization`` 
    The organization name for the certificate. Default: ``Birdhouse``
 
-``organization_unit``
+``organization-unit``
    The organization unit for the certificate. Default: ``Demo`` 
 
 All additional options can be used as parameters in your Nginx site configuration. The ``anaconda-home`` Path is available as ``prefix`` parameter.
