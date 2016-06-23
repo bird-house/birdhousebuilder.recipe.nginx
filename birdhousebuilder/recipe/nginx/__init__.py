@@ -80,7 +80,7 @@ class Recipe(object):
             'name': "nginx",
             'prefix': self.options['prefix'],
             'user': self.options['user'],
-            'etc-user': self.options['user']})
+            'etc-user': self.options['etc-user']})
         add_section(self.deployment_name, self.deployment.options)
         
         self.options['etc-prefix'] = self.options['etc_prefix'] = self.deployment.options['etc-prefix']
@@ -163,7 +163,7 @@ class Recipe(object):
             self.name+'-nginx',
             {'prefix': self.options['prefix'],
              'user': self.options['user'],
-             'chown': self.options.get('user', ''),
+             'etc-user': self.options['etc-user'],
              'program': 'nginx',
              'command': templ_cmd.render(**self.options),
              'directory': '%s/sbin' % (self.env_path),
