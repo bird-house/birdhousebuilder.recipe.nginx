@@ -47,8 +47,8 @@ def generate_cert(out, org, org_unit, hostname):
         crypto.dump_certificate(crypto.FILETYPE_PEM, cert))
         open(out, "at").write(
         crypto.dump_privatekey(crypto.FILETYPE_PEM, k))
-
-        os.chmod(out, stat.S_IRUSR|stat.S_IWUSR)
+        # TODO: fix permissions  ... nginx is run by unpriviledged user.
+        #os.chmod(out, stat.S_IRUSR|stat.S_IWUSR)
     except:
         print("Certificate generation has failed!")
         return False
