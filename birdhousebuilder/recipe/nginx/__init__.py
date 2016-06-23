@@ -55,9 +55,6 @@ def generate_cert(out, org, org_unit, hostname):
     else:
         return True
 
-def make_dirs(path):
-    if not os.path.exists(path):
-        os.makedirs(path)
 
 class Recipe(object):
     """This recipe is used by zc.buildout"""
