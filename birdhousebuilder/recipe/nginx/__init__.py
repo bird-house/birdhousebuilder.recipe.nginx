@@ -3,6 +3,7 @@
 """Recipe nginx"""
 
 import os
+import pwd
 import stat
 from shutil import copy2
 from uuid import uuid4
@@ -12,12 +13,18 @@ import logging
 import zc.buildout
 import zc.recipe.deployment
 from zc.recipe.deployment import Configuration
+from zc.recipe.deployment import make_dir
 import birdhousebuilder.recipe.conda
 from birdhousebuilder.recipe import supervisor
 
 templ_config = Template(filename=os.path.join(os.path.dirname(__file__), "nginx.conf"))
 templ_cmd = Template(
     '${env_path}/sbin/nginx -p ${prefix} -c ${etc_prefix}/nginx/nginx.conf -g "daemon off;"')
+
+def make_dirs(name, user, mode=0o755):
+    etc_uid, etc_gid = pwd.getpwnam(user)[2:4]
+    created = []
+    make_dir(name, etc_uid, etc_gid, mode, created)
 
 def generate_cert(out, org, org_unit, hostname):
     """
@@ -111,6 +118,10 @@ class Recipe(object):
         self.options['organization-unit'] = self.options.get('organization-unit', 'Demo')
 
         self.input = options.get('input')
+
+        # make nginx dirs
+        for dirname in ['client', 'fastcgi', 'proxy', 'scgi', 'uwsgi']:
+            make_dirs(os.path.join(self.options['etc-directory'], dirname), self.options['etc-user'], mode=0o750)
         
 
     def install(self, update=False):
