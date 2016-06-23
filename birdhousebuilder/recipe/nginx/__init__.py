@@ -11,6 +11,7 @@ import logging
 
 import zc.buildout
 import zc.recipe.deployment
+from zc.recipe.deployment import Configuration
 import birdhousebuilder.recipe.conda
 from birdhousebuilder.recipe import supervisor
 
@@ -71,10 +72,21 @@ class Recipe(object):
         self.logger = logging.getLogger(name)
 
         # deployment layout
-        self.deployment = zc.recipe.deployment.Install(buildout, "nginx", {
-                                                'prefix': self.options['prefix'],
-                                                'user': self.options['user'],
-                                                'etc-user': self.options['user']})
+        def add_section(section_name, options):
+            if section_name in buildout._raw:
+                raise KeyError("already in buildout", section_name)
+            #buildout._raw[section_name] = options
+            buildout[section_name] = options
+            #buildout[section_name] # cause it to be added to the working parts
+            
+        self.deployment_name = self.name + "-nginx-deployment"
+        self.deployment = zc.recipe.deployment.Install(buildout, self.deployment_name, {
+            'name': "nginx",
+            'prefix': self.options['prefix'],
+            'user': self.options['user'],
+            'etc-user': self.options['user']})
+        add_section(self.deployment_name, self.deployment.options)
+        
         self.options['etc-prefix'] = self.options['etc_prefix'] = self.deployment.options['etc-prefix']
         self.options['var-prefix'] = self.options['var_prefix'] = self.deployment.options['var-prefix']
         self.options['etc-directory'] = self.options['etc_directory'] = self.deployment.options['etc-directory']
@@ -138,18 +150,15 @@ class Recipe(object):
         install nginx main config file
         """
         text = templ_config.render(**self.options)
-        conf_path = os.path.join(self.options['etc-directory'], 'nginx.conf')
-
-        with open(conf_path, 'wt') as fp:
-            fp.write(text)
-
+        config = Configuration(self.buildout, 'nginx.conf', {
+            'deployment': self.deployment_name,
+            'text': text})
         # copy additional files
         try:
             copy2(os.path.join(os.path.dirname(__file__), "mime.types"), self.options['etc-directory'])
         except:
             pass
-        
-        return [conf_path]
+        return [config.install()]
 
     def install_supervisor(self, update):
         # for nginx only set chmod_user in supervisor!
@@ -168,20 +177,16 @@ class Recipe(object):
     def install_sites(self, update):
         templ_sites = Template(filename=self.input)
         text = templ_sites.render(**self.options)
-
-        conf_path = os.path.join(self.options['etc-directory'], 'conf.d', self.name + '.conf')
-        make_dirs(os.path.dirname(conf_path))
-        
-        with open(conf_path, 'wt') as fp:
-            fp.write(text)
-        return [conf_path]
+        config = Configuration(self.buildout, self.name + '.conf', {
+            'deployment': self.deployment_name,
+            'directory': os.path.join(self.options['etc-directory'], 'conf.d'),
+            'text': text})
+        return [config.install()]
 
     def update(self):
         return self.install(update=True)
     
     def upgrade(self):
-        # clean up things from previous versions
-        # TODO: this is not the correct way to do it
         pass
 
 def uninstall(name, options):
