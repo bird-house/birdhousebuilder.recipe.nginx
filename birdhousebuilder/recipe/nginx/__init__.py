@@ -72,9 +72,8 @@ class Recipe(object):
         def add_section(section_name, options):
             if section_name in buildout._raw:
                 raise KeyError("already in buildout", section_name)
-            #buildout._raw[section_name] = options
-            buildout[section_name] = options
-            #buildout[section_name] # cause it to be added to the working parts
+            buildout._raw[section_name] = options
+            buildout[section_name] # cause it to be added to the working parts
             
         self.deployment_name = self.name + "-nginx-deployment"
         self.deployment = zc.recipe.deployment.Install(buildout, self.deployment_name, {
