@@ -95,6 +95,7 @@ class Recipe(object):
         self.options['etc-directory'] = self.options['etc_directory'] = self.deployment.options['etc-directory']
         self.options['lib-directory'] = self.options['lib_directory'] = self.deployment.options['lib-directory']
         self.options['log-directory'] = self.options['log_directory'] = self.deployment.options['log-directory']
+        self.options['run-directory'] = self.options['run_directory'] = self.deployment.options['run-directory']
         self.options['cache-directory'] = self.options['cache_directory'] = self.deployment.options['cache-directory']
         self.prefix = self.options['prefix']
 
