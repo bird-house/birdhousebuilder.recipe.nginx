@@ -2,7 +2,9 @@
 birdhousebuilder.recipe.nginx
 *****************************
 
-.. contents::
+.. image:: https://travis-ci.org/bird-house/birdhousebuilder.recipe.nginx.svg?branch=master
+   :target: https://travis-ci.org/bird-house/birdhousebuilder.recipe.nginx
+   :alt: Travis Build
 
 Introduction
 ************
@@ -19,48 +21,50 @@ This recipe is used by the `Birdhouse`_ project.
 Usage
 *****
 
-The recipe requires that Anaconda is already installed. It assumes that the default Anaconda location is in your home directory ``~/anaconda``. Otherwise you need to set the ``ANACONDA_HOME`` environment variable or the Buildout option ``anaconda-home``.
+The recipe requires that Anaconda is already installed. You can use the buildout option ``anaconda-home`` to set the prefix for the anaconda installation. Otherwise the environment variable ``CONDA_PREFIX`` (variable is set when activating a conda environment) is used as conda prefix. 
 
-The recipe will install the ``nginx`` package from a conda channel in a conda enviroment named ``birdhouse``. The location of the birdhouse environment is ``.conda/envs/birdhouse``. It deploys a Nginx site configuration for your application. The configuration will be deployed in ``~/.conda/envs/birdhouse/etc/nginx/conf.d/myapp.conf``. Nginx can be started with ``~/.conda/envs/birdhouse/etc/init.d/nginx start``.
+The recipe will install the ``nginx`` package from a conda channel in a conda enviroment defined by ``CONDA_PREFIX``. The intallation folder is given by the ``prefix`` buildout option. It deploys a Nginx site configuration for your application. The configuration will be deployed in ``${prefix}/etc/nginx/conf.d/myapp.conf``. Nginx can be started with ``${prefix}/etc/init.d/nginx start``.
 
-The recipe depends on ``birdhousebuilder.recipe.conda``.
+The recipe depends on ``birdhousebuilder.recipe.conda`` and ``zc.recipe.deployment``.
 
 Supported options
 =================
 
 This recipe supports the following options:
 
-``anaconda-home``
-   Buildout option with the root folder of the Anaconda installation. Default: ``$HOME/anaconda``.
-   The default location can also be set with the environment variable ``ANACONDA_HOME``. Example::
+**anaconda-home**
+   Buildout option pointing to the root folder of the Anaconda installation. Default: ``$HOME/anaconda``.
 
-     export ANACONDA_HOME=/opt/anaconda
+Buildout part options for the program section:
 
-   Search priority is:
+**prefix**
+  Deployment option to set the prefix of the installation folder. Default: ``/``
 
-   1. ``anaconda-home`` in ``buildout.cfg``
-   2. ``$ANACONDA_HOME``
-   3. ``$HOME/anaconda``
+**user**
+  Deployment option to set the run user.
 
-``input``
-   The path to a `Mako`_ template with a Nginx configuration for your application.
+**etc-user**
+  Deployment option to set the user of the ``/etc`` directory. Default: ``root``
 
-``sites``
+**name**
    The name of your application.
 
-``worker_processes``
+**input**
+   The path to a `Mako`_ template with a Nginx configuration for your application.
+
+**worker-processes**
    The number of worker processes started (use ``auto`` for dynamic value). Default: 1
 
-``keepalive_timeout``
+**keepalive-timeout**
    Timeout during keep-alive client connection will stay open on the server side. Default: 5s
 
-``organization`` 
+**organization** 
    The organization name for the certificate. Default: ``Birdhouse``
 
-``organization_unit``
+**organization-unit**
    The organization unit for the certificate. Default: ``Demo`` 
 
-All additional options can be used as parameters in your Nginx site configuration. The ``anaconda-home`` Path is available as ``prefix`` parameter.
+All additional options can be used as parameters in your Nginx site configuration.
 
 
 Example usage
@@ -71,13 +75,15 @@ The following example ``buildout.cfg`` installs Nginx with a site configuration 
   [buildout]
   parts = myapp_nginx
 
-  anaconda-home = /home/myself/anaconda
+  anaconda-home = /opt/anaconda
 
   [myapp_nginx]
   recipe = birdhousebuilder.recipe.nginx
+  name = myapp
+  prefix = /
+  user = www-data
   input = ${buildout:directory}/templates/myapp_nginx.conf
-  sites = myapp
-
+ 
   hostname =  localhost
   port = 8081
 

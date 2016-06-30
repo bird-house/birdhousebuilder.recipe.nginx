@@ -1,6 +1,15 @@
 Changes
 *******
 
+0.3.0 (2016-06-30)
+==================
+
+* enabled travis.
+* updated buildout and doctests.
+* added conda options env, pkgs, channels.
+* using zc.recipe.deployment
+* fail save with log message when cert generation fails.
+
 0.2.6 (2016-04-11)
 ==================
 
