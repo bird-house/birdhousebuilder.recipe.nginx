@@ -19,7 +19,7 @@ from birdhousebuilder.recipe import supervisor
 
 templ_config = Template(filename=os.path.join(os.path.dirname(__file__), "nginx.conf"))
 templ_cmd = Template(
-    '${env_path}/sbin/nginx -p ${prefix} -c ${etc_prefix}/nginx/nginx.conf -g "daemon off;"')
+    '${conda_prefix}/sbin/nginx -p ${prefix} -c ${etc_prefix}/nginx/nginx.conf -g "daemon off;"')
 
 def make_dirs(name, user, mode=0o755):
     etc_uid, etc_gid = pwd.getpwnam(user)[2:4]
@@ -106,8 +106,7 @@ class Recipe(object):
             'env': self.options['env'],
             'pkgs': self.options['pkgs'],
             'channels': self.options['channels'] })
-        self.env_path = self.conda.options['env-path']
-        self.options['env-path'] = self.options['env_path'] = self.env_path
+        self.options['conda-prefix'] = self.options['conda_prefix'] = self.conda.options['prefix']
 
         # config options     
         self.options['hostname'] = self.options.get('hostname', 'localhost')
@@ -177,7 +176,7 @@ class Recipe(object):
              'etc-user': self.options['etc-user'],
              'program': 'nginx',
              'command': templ_cmd.render(**self.options),
-             'directory': '%s/sbin' % (self.env_path),
+             'directory': '%s/sbin' % (self.options['conda-prefix']),
              })
         return script.install(update)
 
