@@ -1,6 +1,12 @@
 Changes
 *******
 
+0.3.1 (2016-07-04)
+==================
+
+* enabled user in nginx.conf.
+* using supervisor skip-user option.
+
 0.3.0 (2016-06-30)
 ==================
 
