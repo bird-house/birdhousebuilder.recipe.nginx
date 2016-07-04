@@ -175,6 +175,7 @@ class Recipe(object):
             {'prefix': self.options['prefix'],
              'user': self.options['user'],
              'etc-user': self.options['etc-user'],
+             'skip-user': True,
              'program': 'nginx',
              'command': templ_cmd.render(**self.options),
              'directory': '%s/sbin' % (self.options['conda-prefix']),
