@@ -7,7 +7,7 @@ from setuptools import setup
 
 name = 'birdhousebuilder.recipe.nginx'
 
-version = '0.3.1'
+version = '0.3.2'
 description = 'A Buildout recipe to install and configure Nginx with conda.'
 long_description = (
     open('README.rst').read() + '\n' +
