@@ -122,6 +122,8 @@ class Recipe(object):
         # make nginx dirs
         for dirname in ['client', 'fastcgi', 'proxy', 'scgi', 'uwsgi']:
             make_dirs(os.path.join(self.options['etc-directory'], dirname), self.options['etc-user'], mode=0o750)
+        # make www folder
+        make_dirs(os.path.join(self.options['var-prefix'], 'www'), self.options['user'], mode=0o755)
         
 
     def install(self, update=False):
