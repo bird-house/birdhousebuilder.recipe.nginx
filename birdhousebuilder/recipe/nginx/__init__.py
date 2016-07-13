@@ -26,7 +26,7 @@ def make_dirs(name, user, mode=0o755):
     created = []
     make_dir(name, etc_uid, etc_gid, mode, created)
 
-def generate_cert(out, org, org_unit, hostname):
+def generate_cert(out, org, org_unit, hostname, key_length=1024):
     """
     Generates self signed certificate for https connections.
 
@@ -35,7 +35,7 @@ def generate_cert(out, org, org_unit, hostname):
     try:
         from OpenSSL import crypto
         k = crypto.PKey()
-        k.generate_key(crypto.TYPE_RSA, 2048)
+        k.generate_key(crypto.TYPE_RSA, key_length)
         cert = crypto.X509()
         cert.get_subject().O = org
         cert.get_subject().OU = org_unit
@@ -116,6 +116,7 @@ class Recipe(object):
         self.options['sendfile'] = self.options.get('sendfile', 'off')
         self.options['organization'] = self.options.get('organization', 'Birdhouse')
         self.options['organization-unit'] = self.options.get('organization-unit', 'Demo')
+        self.options['ssl-key-length'] = self.options['ssl_key_length'] = int(self.options.get('ssl-key-length', '1024')) 
 
         self.input = options.get('input')
 
@@ -149,7 +150,8 @@ class Recipe(object):
                 out=certfile,
                 org=self.options.get('organization'),
                 org_unit=self.options.get('organization-unit'),
-                hostname=self.options.get('hostname')):
+                hostname=self.options.get('hostname'),
+                key_length=self.options.get('ssl-key-length')):
             return []
         else:
             return []
