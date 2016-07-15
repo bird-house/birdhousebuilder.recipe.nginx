@@ -116,7 +116,7 @@ class Recipe(object):
         self.options['sendfile'] = self.options.get('sendfile', 'off')
         self.options['organization'] = self.options.get('organization', 'Birdhouse')
         self.options['organization-unit'] = self.options.get('organization-unit', 'Demo')
-        self.options['ssl-key-length'] = self.options['ssl_key_length'] = int(self.options.get('ssl-key-length', '1024')) 
+        self.options['ssl-key-length'] = self.options['ssl_key_length'] = self.options.get('ssl-key-length', '1024') 
 
         self.input = options.get('input')
 
@@ -151,7 +151,7 @@ class Recipe(object):
                 org=self.options.get('organization'),
                 org_unit=self.options.get('organization-unit'),
                 hostname=self.options.get('hostname'),
-                key_length=self.options.get('ssl-key-length')):
+                key_length=int(self.options.get('ssl-key-length'))):
             return []
         else:
             return []
