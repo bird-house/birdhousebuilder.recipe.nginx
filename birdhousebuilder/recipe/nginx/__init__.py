@@ -21,10 +21,12 @@ templ_config = Template(filename=os.path.join(os.path.dirname(__file__), "nginx.
 templ_cmd = Template(
     '${conda_prefix}/sbin/nginx -p ${prefix} -c ${etc_prefix}/nginx/nginx.conf -g "daemon off;"')
 
+
 def make_dirs(name, user, mode=0o755):
     etc_uid, etc_gid = pwd.getpwnam(user)[2:4]
     created = []
     make_dir(name, etc_uid, etc_gid, mode, created)
+
 
 def generate_cert(out, org, org_unit, hostname, key_length=1024):
     """
@@ -51,11 +53,11 @@ def generate_cert(out, org, org_unit, hostname, key_length=1024):
         cert.sign(k, 'sha256')
         # write to cert and key to same file
         open(out, "wt").write(
-        crypto.dump_certificate(crypto.FILETYPE_PEM, cert))
+            crypto.dump_certificate(crypto.FILETYPE_PEM, cert))
         open(out, "at").write(
-        crypto.dump_privatekey(crypto.FILETYPE_PEM, k))
+            crypto.dump_privatekey(crypto.FILETYPE_PEM, k))
         # TODO: fix permissions  ... nginx is run by unpriviledged user.
-        #os.chmod(out, stat.S_IRUSR|stat.S_IWUSR)
+        # os.chmod(out, stat.S_IRUSR|stat.S_IWUSR)
     except:
         print("Certificate generation has failed!")
         return False
@@ -80,8 +82,8 @@ class Recipe(object):
             if section_name in buildout._raw:
                 raise KeyError("already in buildout", section_name)
             buildout._raw[section_name] = options
-            buildout[section_name] # cause it to be added to the working parts
-            
+            buildout[section_name]  # cause it to be added to the working parts
+
         self.deployment_name = self.name + "-nginx-deployment"
         self.deployment = zc.recipe.deployment.Install(buildout, self.deployment_name, {
             'name': "nginx",
@@ -89,7 +91,7 @@ class Recipe(object):
             'user': self.options['user'],
             'etc-user': self.options['etc-user']})
         add_section(self.deployment_name, self.deployment.options)
-        
+
         self.options['etc-prefix'] = self.options['etc_prefix'] = self.deployment.options['etc-prefix']
         self.options['var-prefix'] = self.options['var_prefix'] = self.deployment.options['var-prefix']
         self.options['etc-directory'] = self.options['etc_directory'] = self.deployment.options['etc-directory']
@@ -106,17 +108,18 @@ class Recipe(object):
         self.conda = birdhousebuilder.recipe.conda.Recipe(self.buildout, self.name, {
             'env': self.options['env'],
             'pkgs': self.options['pkgs'],
-            'channels': self.options['channels'] })
+            'channels': self.options['channels']})
         self.options['conda-prefix'] = self.options['conda_prefix'] = self.conda.options['prefix']
 
-        # config options     
+        # config options
         self.options['hostname'] = self.options.get('hostname', 'localhost')
-        self.options['worker-processes'] =self.options['worker_processes'] = self.options.get('worker-processes', '1')
-        self.options['keepalive-timeout'] = self.options['keepalive_timeout'] = self.options.get('keepalive-timeout', '5s')
+        self.options['worker-processes'] = self.options['worker_processes'] = self.options.get('worker-processes', '1')
+        self.options['keepalive-timeout'] = self.options['keepalive_timeout'] = \
+            self.options.get('keepalive-timeout', '5s')
         self.options['sendfile'] = self.options.get('sendfile', 'off')
         self.options['organization'] = self.options.get('organization', 'Birdhouse')
         self.options['organization-unit'] = self.options.get('organization-unit', 'Demo')
-        self.options['ssl-key-length'] = self.options['ssl_key_length'] = self.options.get('ssl-key-length', '1024') 
+        self.options['ssl-key-length'] = self.options['ssl_key_length'] = self.options.get('ssl-key-length', '1024')
 
         self.input = options.get('input')
 
@@ -125,7 +128,6 @@ class Recipe(object):
             make_dirs(os.path.join(self.options['etc-directory'], dirname), self.options['etc-user'], mode=0o750)
         # make www folder
         make_dirs(os.path.join(self.options['var-prefix'], 'www'), self.options['user'], mode=0o755)
-        
 
     def install(self, update=False):
         installed = []
@@ -155,7 +157,7 @@ class Recipe(object):
             return []
         else:
             return []
-    
+
     def install_config(self, update):
         """
         install nginx main config file
@@ -175,7 +177,7 @@ class Recipe(object):
         # for nginx only set chmod_user in supervisor!
         script = supervisor.Recipe(
             self.buildout,
-            self.name+'-nginx',
+            self.name + '-nginx',
             {'prefix': self.options['prefix'],
              'user': self.options['user'],
              'etc-user': self.options['etc-user'],
@@ -197,10 +199,10 @@ class Recipe(object):
 
     def update(self):
         return self.install(update=True)
-    
+
     def upgrade(self):
         pass
 
+
 def uninstall(name, options):
     pass
-
