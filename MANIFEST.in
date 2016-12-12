@@ -1,3 +1,3 @@
 include *.rst
 graft birdhousebuilder
-global-exclude *.pyc
+global-exclude *.pyc *.*~
