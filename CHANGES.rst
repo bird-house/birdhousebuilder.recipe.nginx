@@ -5,6 +5,7 @@ Changes
 ==================
 
 * fixed ``etc/`` folder permissions.
+* update MANIFEST.in.
 
 0.3.4 (2016-07-14)
 ==================
