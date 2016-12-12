@@ -127,6 +127,9 @@ class Recipe(object):
         make_dirs(self.options['etc-directory'], self.options['etc-user'], mode=0o755)
         for dirname in ['client', 'fastcgi', 'proxy', 'scgi', 'uwsgi']:
             make_dirs(os.path.join(self.options['etc-directory'], dirname), self.options['etc-user'], mode=0o755)
+        # var folder
+        make_dirs(self.options['var-prefix'], self.options['user'], mode=0o755)
+        make_dirs(os.path.join(self.options['var-prefix'], 'run'), self.options['user'], mode=0o755)
         # make www folder
         make_dirs(os.path.join(self.options['var-prefix'], 'www'), self.options['user'], mode=0o755)
 
