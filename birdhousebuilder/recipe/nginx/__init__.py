@@ -92,6 +92,7 @@ class Recipe(object):
             'etc-user': self.options['etc-user']})
         add_section(self.deployment_name, self.deployment.options)
 
+        self.options['etc_user'] = self.options['etc-user']
         self.options['etc-prefix'] = self.options['etc_prefix'] = self.deployment.options['etc-prefix']
         self.options['var-prefix'] = self.options['var_prefix'] = self.deployment.options['var-prefix']
         self.options['etc-directory'] = self.options['etc_directory'] = self.deployment.options['etc-directory']
@@ -130,6 +131,7 @@ class Recipe(object):
         # var folder
         make_dirs(self.options['var-prefix'], self.options['user'], mode=0o755)
         make_dirs(os.path.join(self.options['var-prefix'], 'run'), self.options['user'], mode=0o755)
+        make_dirs(os.path.join(self.options['var-prefix'], 'tmp', 'nginx'), self.options['user'], mode=0o755)
         # make www folder
         make_dirs(os.path.join(self.options['var-prefix'], 'www'), self.options['user'], mode=0o755)
 
