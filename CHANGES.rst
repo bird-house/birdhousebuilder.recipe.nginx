@@ -1,6 +1,12 @@
 Changes
 *******
 
+0.3.6 (2017-03-09)
+==================
+
+* create ``var/tmp/nginx`` folder.
+* set ``user`` directive only if different from etc-user.
+
 0.3.5 (2016-12-12)
 ==================
 
