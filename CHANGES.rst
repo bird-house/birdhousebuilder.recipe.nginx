@@ -1,6 +1,13 @@
 Changes
 *******
 
+0.3.7 (2018-02-07)
+==================
+
+* Feature #8: added options to handle SSL client verification.
+* fixed travis build ... needed to update versions.
+* pep8.
+
 0.3.6 (2017-03-09)
 ==================
 
@@ -21,7 +28,7 @@ Changes
 0.3.3 (2016-07-13)
 ==================
 
-* ssl-key-length option added. 
+* ssl-key-length option added.
 
 0.3.2 (2016-07-11)
 ==================
