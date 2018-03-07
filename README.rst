@@ -10,7 +10,7 @@ Introduction
 ************
 
 ``birdhousebuilder.recipe.nginx`` is a `Buildout`_ recipe to install `Nginx`_ from an `Anaconda`_ channel and to deploy a site configuration for your application.
-This recipe is used by the `Birdhouse`_ project. 
+This recipe is used by the `Birdhouse`_ project.
 
 .. _`Buildout`: http://buildout.org/
 .. _`Anaconda`: http://continuum.io/
@@ -21,7 +21,7 @@ This recipe is used by the `Birdhouse`_ project.
 Usage
 *****
 
-The recipe requires that Anaconda is already installed. You can use the buildout option ``anaconda-home`` to set the prefix for the anaconda installation. Otherwise the environment variable ``CONDA_PREFIX`` (variable is set when activating a conda environment) is used as conda prefix. 
+The recipe requires that Anaconda is already installed. You can use the buildout option ``anaconda-home`` to set the prefix for the anaconda installation. Otherwise the environment variable ``CONDA_PREFIX`` (variable is set when activating a conda environment) is used as conda prefix.
 
 The recipe will install the ``nginx`` package from a conda channel in a conda enviroment defined by ``CONDA_PREFIX``. The intallation folder is given by the ``prefix`` buildout option. It deploys a Nginx site configuration for your application. The configuration will be deployed in ``${prefix}/etc/nginx/conf.d/myapp.conf``. Nginx can be started with ``${prefix}/etc/init.d/nginx start``.
 
@@ -58,13 +58,28 @@ Buildout part options for the program section:
 **keepalive-timeout**
    Timeout during keep-alive client connection will stay open on the server side. Default: 5s
 
-**organization** 
+**organization**
    The organization name for the certificate. Default: ``Birdhouse``
 
 **organization-unit**
-   The organization unit for the certificate. Default: ``Demo`` 
+   The organization unit for the certificate. Default: ``Demo``
+
+**ssl-verify-client**
+  Nginx option to verify SSL client certificates. Possible values: ``off`` (default), ``on``, ``optional``.
+  `Nginx ssl_verify_client option`_
+
+**ssl-client-certificate**
+  Nginx option with the name of the bundle of CA certificates for the client. Default: ``esgf-ca-bundle.crt``.
+  `Nginx ssl_client_certificate`_
+
+**ssl-client-certificate-url**
+  Optional URL to download a bundle of CA certificates for ``ssl-client-certificate``. Default:
+  https://github.com/ESGF/esgf-dist/raw/master/installer/certs/esgf-ca-bundle.crt
 
 All additional options can be used as parameters in your Nginx site configuration.
+
+.. _Nginx ssl_verify_client option: https://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_verify_client
+.. _Nginx ssl_client_certificate option: https://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_client_certificate
 
 
 Example usage
@@ -83,7 +98,7 @@ The following example ``buildout.cfg`` installs Nginx with a site configuration 
   prefix = /
   user = www-data
   input = ${buildout:directory}/templates/myapp_nginx.conf
- 
+
   hostname =  localhost
   port = 8081
 
@@ -97,7 +112,7 @@ An example Mako template for your Nginx configuration could look like this::
     listen ${port};
     server_name ${hostname};
 
-    root ${prefix}/var/www;      
+    root ${prefix}/var/www;
     index index.html index.htm;
 
     location / {
@@ -109,6 +124,3 @@ An example Mako template for your Nginx configuration could look like this::
         proxy_pass http://myapp;
     }
   }
-
-
-

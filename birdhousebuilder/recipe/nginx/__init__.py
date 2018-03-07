@@ -16,6 +16,7 @@ from zc.recipe.deployment import Configuration
 from zc.recipe.deployment import make_dir
 import birdhousebuilder.recipe.conda
 from birdhousebuilder.recipe import supervisor
+from birdhousebuilder.recipe.nginx._compat import urlretrieve
 
 templ_config = Template(filename=os.path.join(os.path.dirname(__file__), "nginx.conf"))
 templ_cmd = Template(
@@ -58,7 +59,7 @@ def generate_cert(out, org, org_unit, hostname, key_length=1024):
             crypto.dump_privatekey(crypto.FILETYPE_PEM, k))
         # TODO: fix permissions  ... nginx is run by unpriviledged user.
         # os.chmod(out, stat.S_IRUSR|stat.S_IWUSR)
-    except:
+    except Exception:
         print("Certificate generation has failed!")
         return False
     else:
@@ -114,6 +115,8 @@ class Recipe(object):
 
         # config options
         self.options['hostname'] = self.options.get('hostname', 'localhost')
+        self.options['http-port'] = self.options['http_port'] = self.options.get('http-port', '80')
+        self.options['https-port'] = self.options['https_port'] = self.options.get('https-port', '443')
         self.options['worker-processes'] = self.options['worker_processes'] = self.options.get('worker-processes', '1')
         self.options['keepalive-timeout'] = self.options['keepalive_timeout'] = \
             self.options.get('keepalive-timeout', '5s')
@@ -121,6 +124,14 @@ class Recipe(object):
         self.options['organization'] = self.options.get('organization', 'Birdhouse')
         self.options['organization-unit'] = self.options.get('organization-unit', 'Demo')
         self.options['ssl-key-length'] = self.options['ssl_key_length'] = self.options.get('ssl-key-length', '1024')
+        self.options['ssl-verify-client'] = self.options['ssl_verify_client'] = \
+            self.options.get('ssl-verify-client', 'off')
+        self.options['ssl-client-certificate'] = self.options['ssl_client_certificate'] = \
+            self.options.get('ssl-client-certificate', 'esgf-ca-bundle.crt')
+        self.options['ssl-client-certificate-url'] = self.options['ssl_client_certificate_url'] = \
+            self.options.get(
+                'ssl-client-certificate-url',
+                'https://github.com/ESGF/esgf-dist/raw/master/installer/certs/esgf-ca-bundle.crt')
 
         self.input = options.get('input')
 
@@ -141,6 +152,7 @@ class Recipe(object):
             installed += list(self.deployment.install())
         installed += list(self.conda.install(update))
         installed += list(self.install_cert(update))
+        installed += list(self.install_ca_bundle(update))
         installed += list(self.install_config(update))
         installed += list(self.install_supervisor(update))
         installed += list(self.install_sites(update))
@@ -164,6 +176,15 @@ class Recipe(object):
         else:
             return []
 
+    def install_ca_bundle(self, update):
+        if self.options['ssl-verify-client'] in ['on', 'optional'] and \
+                self.options.get('ssl-client-certificate-url', ''):
+            ca_bundle_file = os.path.join(self.options['etc-directory'], self.options['ssl-client-certificate'])
+            urlretrieve(
+                self.options['ssl-client-certificate-url'],
+                ca_bundle_file)
+        return []
+
     def install_config(self, update):
         """
         install nginx main config file
@@ -175,7 +196,7 @@ class Recipe(object):
         # copy additional files
         try:
             copy2(os.path.join(os.path.dirname(__file__), "mime.types"), self.options['etc-directory'])
-        except:
+        except Exception:
             pass
         return [config.install()]
 

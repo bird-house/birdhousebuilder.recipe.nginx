@@ -7,7 +7,7 @@ from setuptools import setup
 
 name = 'birdhousebuilder.recipe.nginx'
 
-version = '0.3.6'
+version = '0.3.7'
 description = 'A Buildout recipe to install and configure Nginx with conda.'
 long_description = (
     open('README.rst').read() + '\n' +
@@ -49,11 +49,11 @@ setup(name=name,
       author='Birdhouse',
       url='https://github.com/bird-house/birdhousebuilder.recipe.nginx',
       license='Apache License 2',
-      install_requires = reqs,
-      extras_require = dict(tests=tests_reqs),
-      entry_points = entry_points,
-      packages = find_packages(exclude=['ez_setup']),
-      namespace_packages = ['birdhousebuilder', 'birdhousebuilder.recipe'],
-      include_package_data = True,
-      zip_safe = False,
+      install_requires=reqs,
+      extras_require=dict(tests=tests_reqs),
+      entry_points=entry_points,
+      packages=find_packages(exclude=['ez_setup']),
+      namespace_packages=['birdhousebuilder', 'birdhousebuilder.recipe'],
+      include_package_data=True,
+      zip_safe=False,
       )
