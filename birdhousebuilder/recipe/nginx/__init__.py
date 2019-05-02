@@ -53,9 +53,9 @@ def generate_cert(out, org, org_unit, hostname, key_length=1024):
         cert.set_pubkey(k)
         cert.sign(k, 'sha256')
         # write to cert and key to same file
-        open(out, "wt").write(
+        open(out, "wb").write(
             crypto.dump_certificate(crypto.FILETYPE_PEM, cert))
-        open(out, "at").write(
+        open(out, "ab").write(
             crypto.dump_privatekey(crypto.FILETYPE_PEM, k))
         # TODO: fix permissions  ... nginx is run by unpriviledged user.
         # os.chmod(out, stat.S_IRUSR|stat.S_IWUSR)
