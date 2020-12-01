@@ -37,6 +37,7 @@ setup(name=name,
       version=version,
       description=description,
       long_description=long_description,
+      long_description_content_type="text/x-rst",
       # Get more strings from http://www.python.org/pypi?%3Aaction=list_classifiers
       classifiers=[
           'Framework :: Buildout',
