@@ -93,6 +93,7 @@ class Recipe(object):
             'etc-user': self.options['etc-user']})
         add_section(self.deployment_name, self.deployment.options)
 
+        self.options['group'] = self.options.get('group', '')
         self.options['etc_user'] = self.options['etc-user']
         self.options['etc-prefix'] = self.options['etc_prefix'] = self.deployment.options['etc-prefix']
         self.options['var-prefix'] = self.options['var_prefix'] = self.deployment.options['var-prefix']
