@@ -9,11 +9,12 @@ name = 'birdhousebuilder.recipe.nginx'
 
 version = '0.4.1'
 description = 'A Buildout recipe to install and configure Nginx with conda.'
-long_description = (
-    open('README.rst').read() + '\n' +
-    open('AUTHORS.rst').read() + '\n' +
-    open('CHANGES.rst').read()
-)
+long_description = open('README.rst').read()
+# long_description = (
+#     open('README.rst').read() + '\n' +
+#     open('AUTHORS.rst').read() + '\n' +
+#     open('CHANGES.rst').read()
+# )
 
 entry_points = '''
 [zc.buildout]

@@ -66,11 +66,11 @@ Buildout part options for the program section:
 
 **ssl-verify-client**
   Nginx option to verify SSL client certificates. Possible values: ``off`` (default), ``on``, ``optional``.
-  `Nginx ssl_verify_client option`_
+  https://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_verify_client
 
 **ssl-client-certificate**
   Nginx option with the name of the bundle of CA certificates for the client. Default: ``esgf-ca-bundle.crt``.
-  `Nginx ssl_client_certificate`_
+  https://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_client_certificate
 
 **ssl-client-certificate-url**
   Optional URL to download a bundle of CA certificates for ``ssl-client-certificate``. Default:
@@ -78,8 +78,6 @@ Buildout part options for the program section:
 
 All additional options can be used as parameters in your Nginx site configuration.
 
-.. _Nginx ssl_verify_client option: https://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_verify_client
-.. _Nginx ssl_client_certificate option: https://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_client_certificate
 
 
 Example usage
