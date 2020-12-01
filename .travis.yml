@@ -1,7 +1,7 @@
 language: python
 python:
   - "3.6"
-sudo: true
+sudo: false
 install:
  - mkdir -p buildout-cache/eggs
  - mkdir -p buildout-cache/downloads
