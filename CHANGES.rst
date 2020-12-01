@@ -1,6 +1,12 @@
 Changes
 *******
 
+0.4.1 (2020-12-01)
+==================
+
+* Added more SSL certificate settings to inject into nginx.conf (#13).
+* Updated travis config.
+
 0.4.0 (2019-05-02)
 ==================
 
