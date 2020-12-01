@@ -128,6 +128,10 @@ class Recipe(object):
             self.options.get('ssl-verify-client', 'off')
         self.options['ssl-client-certificate'] = self.options['ssl_client_certificate'] = \
             self.options.get('ssl-client-certificate', 'esgf-ca-bundle.crt')
+        self.options['ssl-certificate-key'] = self.options['ssl_certificate_key'] = \
+            self.options.get('ssl-certificate-key', 'cert.pem')
+        self.options['ssl-trusted-certificate'] = self.options['ssl_trusted_certificate'] = \
+            self.options.get('ssl-trusted-certificate', 'cert_chain.crt')
         self.options['ssl-client-certificate-url'] = self.options['ssl_client_certificate_url'] = \
             self.options.get(
                 'ssl-client-certificate-url',
